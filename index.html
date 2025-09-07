@@ -11,14 +11,14 @@
         .glass-effect {
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(20, 184, 166, 0.2);
             transition: all 0.3s ease;
         }
         .glass-effect:hover {
             background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(34, 197, 94, 0.4);
+            border: 1px solid rgba(20, 184, 166, 0.4);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.1);
+            box-shadow: 0 10px 25px rgba(20, 184, 166, 0.1);
         }
         .input-glow:focus {
             box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
@@ -97,7 +97,7 @@
             <div class="flex items-center justify-center mb-4">
                 <img src="SuperNegrelli.png" alt="Super Negrelli" class="h-16 sm:h-20 lg:h-24 w-auto">
             </div>
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 to-orange-500 bg-clip-text text-transparent mb-2">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 to-teal-500 bg-clip-text text-transparent mb-2">
                 Sistema de Pedidos
             </h1>
             <p class="text-gray-300 text-sm sm:text-base">Gestão de Pedidos | Super Negrelli</p>
@@ -178,7 +178,7 @@
 
             <!-- Lista de Itens -->
             <div class="glass-effect rounded-xl p-4 sm:p-6 slide-in">
-                <h2 class="text-xl font-semibold mb-4 text-orange-400 flex items-center gap-2">
+                <h2 class="text-xl font-semibold mb-4 text-teal-400 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L2 21m5-8v8a2 2 0 002 2h6a2 2 0 002-2v-8"/>
                     </svg>
@@ -219,7 +219,7 @@
                         <input type="text" id="descricao-desktop" placeholder="Descrição do produto"
                                class="col-span-7 p-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
                     </div>
-                    <button id="adicionarItem" class="w-full py-2 bg-orange-600 hover:bg-orange-700 rounded-lg transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2">
+                    <button id="adicionarItem" class="w-full py-2 bg-teal-600 hover:bg-teal-700 rounded-lg transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                         </svg>
@@ -272,7 +272,7 @@
             <div id="campoTroco" class="mt-4 hidden">
                 <label class="block text-sm font-medium mb-2">Precisa de troco? Para quanto?</label>
                 <input type="number" id="valorTroco" placeholder="Valor para troco" min="0" step="0.01"
-                       class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500">
+                       class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500">
             </div>
             
             <div class="mt-4">
@@ -289,7 +289,7 @@
                 </svg>
                 Copiar para WhatsApp
             </button>
-            <button id="imprimirPedido" class="flex-1 min-w-48 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2" disabled>
+            <button id="imprimirPedido" class="flex-1 min-w-48 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2" disabled>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
@@ -301,7 +301,7 @@
                 </svg>
                 Novo Pedido
             </button>
-            <button id="exportarCSV" class="py-3 px-6 bg-orange-600 hover:bg-orange-700 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex items-center gap-2">
+            <button id="exportarCSV" class="py-3 px-6 bg-teal-600 hover:bg-teal-700 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
@@ -721,12 +721,12 @@
         document.querySelectorAll('.pagamento-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.pagamento-btn').forEach(b => {
-                    b.classList.remove('bg-orange-600', 'border-orange-500');
+                    b.classList.remove('bg-teal-600', 'border-teal-500');
                     b.classList.add('bg-gray-900', 'border-gray-700');
                 });
                 
                 btn.classList.remove('bg-gray-900', 'border-gray-700');
-                btn.classList.add('bg-orange-600', 'border-orange-500');
+                btn.classList.add('bg-teal-600', 'border-teal-500');
                 
                 formaPagamentoSelecionada = btn.dataset.tipo;
                 elements.pagamentoSelecionado.textContent = btn.textContent;
@@ -760,7 +760,7 @@
                 texto += `• ${item.quantidade} ${item.unidade} - ${item.descricao}\n`;
             });
             
-            texto += `💳 *Pagamento:* ${document.querySelector('.pagamento-btn.bg-orange-600').textContent}`;
+            texto += `💳 *Pagamento:* ${document.querySelector('.pagamento-btn.bg-teal-600').textContent}`;
             
             if (formaPagamentoSelecionada === 'dinheiro' && elements.valorTroco.value) {
                 texto += ` - Troco para ${formatarMoeda(elements.valorTroco.value)}`;
@@ -813,7 +813,7 @@
             });
             document.getElementById('printItens').innerHTML = itensHTML;
             
-            let pagamentoText = document.querySelector('.pagamento-btn.bg-orange-600').textContent;
+            let pagamentoText = document.querySelector('.pagamento-btn.bg-teal-600').textContent;
             if (formaPagamentoSelecionada === 'dinheiro' && elements.valorTroco.value) {
                 pagamentoText += ` - Troco: ${formatarMoeda(elements.valorTroco.value)}`;
             }
@@ -862,7 +862,7 @@
                 
                 // Resetar botões de pagamento
                 document.querySelectorAll('.pagamento-btn').forEach(btn => {
-                    btn.classList.remove('bg-orange-600', 'border-orange-500');
+                    btn.classList.remove('bg-teal-600', 'border-teal-500');
                     btn.classList.add('bg-gray-900', 'border-gray-700');
                 });
                 
