@@ -48,6 +48,17 @@
         .item-exit {
             animation: itemExit 0.3s ease-in forwards;
         }
+        .autocomplete-item {
+            transition: all 0.2s ease;
+        }
+        .autocomplete-item:hover, .autocomplete-item.selected {
+            background: rgba(20, 184, 166, 0.2);
+            border-left: 3px solid rgba(20, 184, 166, 0.8);
+        }
+        .star-favorited {
+            color: #fbbf24 !important;
+            fill: #fbbf24 !important;
+        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -187,17 +198,33 @@
                                class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 input-glow">
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium mb-2">CEP</label>
-                        <input type="text" id="cep" placeholder="00000-000"
-                               class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 input-glow">
+                    <div class="relative">
+                        <label class="block text-sm font-medium mb-2">CEP <span class="text-xs text-gray-400">(autocomplete disponível)</span></label>
+                        <input type="text" id="cep" placeholder="Digite CEP ou rua para buscar..."
+                               class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 input-glow"
+                               autocomplete="off">
+                        <!-- Dropdown de autocomplete para CEP -->
+                        <div id="autocompleteCepDropdown" class="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-lg hidden max-h-64 overflow-y-auto">
+                            <div id="autocompleteCepList" class="py-2">
+                                <!-- Sugestões aparecerão aqui -->
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-medium mb-2">Rua</label>
-                            <input type="text" id="rua" placeholder="Nome da rua"
-                                   class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 input-glow">
+                        <div class="sm:col-span-1 relative">
+                            <label class="block text-sm font-medium mb-2">Rua <span class="text-xs text-gray-400">(autocomplete disponível)</span></label>
+                            <div class="relative">
+                                <input type="text" id="rua" placeholder="Digite rua, CEP ou bairro para buscar..."
+                                       class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 input-glow"
+                                       autocomplete="off">
+                            </div>
+                            <!-- Dropdown de autocomplete -->
+                            <div id="autocompleteDropdown" class="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-lg hidden max-h-64 overflow-y-auto">
+                                <div id="autocompleteList" class="py-2">
+                                    <!-- Sugestões aparecerão aqui -->
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2">Número</label>
@@ -243,12 +270,12 @@
                                class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500">
                         <select id="unidade" class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500">
                             <option value="un">Unidade</option>
+                            <option value="bj">Bandeja</option>
                             <option value="kg">Quilograma</option>
-                            <option value="g">Gramas</option>
+                            <option value="g">Grama</option>
+                            <option value="dz">Dúzia</option>
+                            <option value="fd">Fardo</option>
                             <option value="cx">Caixa</option>
-                            <option value="pct">Pacote</option>
-                            <option value="L">Litros</option>
-                            <option value="ml">Mililitros</option>
                         </select>
                         <input type="text" id="descricao" placeholder="Descrição do produto"
                                class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500">
@@ -260,12 +287,12 @@
                                class="col-span-3 p-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
                         <select id="unidade-desktop" class="col-span-2 p-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
                             <option value="un">un</option>
+                            <option value="bj">bj</option>
                             <option value="kg">kg</option>
                             <option value="g">g</option>
+                            <option value="dz">dz</option>
+                            <option value="fd">fd</option>
                             <option value="cx">cx</option>
-                            <option value="pct">pct</option>
-                            <option value="L">L</option>
-                            <option value="ml">ml</option>
                         </select>
                         <input type="text" id="descricao-desktop" placeholder="Descrição do produto"
                                class="col-span-7 p-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
@@ -276,6 +303,39 @@
                         </svg>
                         Adicionar Item
                     </button>
+                    
+                    <!-- Itens Rápidos -->
+                    <div class="mt-4">
+                        <h4 class="text-sm font-medium mb-3 text-blue-400 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Itens Rápidos - Águas 20L
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button class="item-rapido px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2" 
+                                    data-item="Font Life 20L">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                Font Life 20L
+                            </button>
+                            <button class="item-rapido px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2" 
+                                    data-item="Ouro Fino 20L">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                Ouro Fino 20L
+                            </button>
+                            <button class="item-rapido px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2" 
+                                    data-item="Timbu 20L">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                Timbu 20L
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-6">
@@ -358,6 +418,12 @@
                 </svg>
                 Imprimir Pedido
             </button>
+            <button id="historicoPedidos" class="py-3 px-6 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Histórico
+            </button>
             <button id="novoPedido" class="py-3 px-6 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -402,6 +468,38 @@
         </div>
     </div>
 
+    <!-- Modal do Histórico de Pedidos -->
+    <div id="modalHistorico" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glass-effect rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Histórico de Pedidos
+                    </h2>
+                    <button id="fecharModalHistorico" class="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div id="listaHistorico" class="space-y-3 overflow-y-auto max-h-[70vh]">
+                    <!-- Histórico será carregado aqui -->
+                </div>
+                
+                <div id="carregandoHistorico" class="text-center py-8 hidden">
+                    <svg class="w-8 h-8 mx-auto mb-3 animate-spin text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <p class="text-gray-400">Carregando histórico...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuração do IndexedDB
         let db;
@@ -411,6 +509,18 @@
         // Estado da aplicação
         let itensCompra = [];
         let formaPagamentoSelecionada = '';
+        
+        // Estado do autocomplete
+        let autocompleteAtivo = false;
+        let selectedIndex = -1;
+        let enderecosFiltrados = [];
+        let timeoutAutocomplete = null;
+        
+        // Estado do autocomplete CEP
+        let autocompleteCepAtivo = false;
+        let selectedCepIndex = -1;
+        let cepsFiltrados = [];
+        let timeoutAutocompleteCep = null;
 
         // Elementos DOM
         const elements = {
@@ -733,6 +843,434 @@
             });
         }
 
+        // Buscar últimos pedidos (histórico)
+        function buscarUltimosPedidos(limite = 10) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['pedidos'], 'readonly');
+                const store = transaction.objectStore('pedidos');
+                const index = store.index('data');
+                
+                const pedidos = [];
+                const request = index.openCursor(null, 'prev'); // Ordem decrescente por data
+                
+                request.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor && pedidos.length < limite) {
+                        pedidos.push(cursor.value);
+                        cursor.continue();
+                    } else {
+                        resolve(pedidos);
+                    }
+                };
+                
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ========== LISTA FIXA DE ENDEREÇOS PARA AUTOCOMPLETE ==========
+
+        const enderecosDisponiveis = [
+            { rua: "Rua Francisco Ader", cep: "81050-140", bairro: "Novo Mundo" },
+            { rua: "Rua Gustavo Schier", cep: "81050-130", bairro: "Novo Mundo" },
+            { rua: "Rua Olga de Araújo Espíndola", cep: "81050-280", bairro: "Novo Mundo" },
+            { rua: "Rua Paulina Ader", cep: "81050-250", bairro: "Novo Mundo" },
+            { rua: "Rua Orlando Albino Von der Osten", cep: "81050-160", bairro: "Novo Mundo" },
+            { rua: "Rua Primo Lourenço Tosin", cep: "81050-290", bairro: "Novo Mundo" },
+            { rua: "Rua Deputado Waldemiro Pedroso", cep: "81050-150", bairro: "Novo Mundo" },
+            { rua: "Rua Antônio Gasparin", cep: "81050-210", bairro: "Novo Mundo" },
+            { rua: "Rua João Bonat", cep: "81050-170", bairro: "Novo Mundo" },
+            { rua: "Rua Luiz Leopoldo Landal", cep: "81050-120", bairro: "Novo Mundo" },
+            { rua: "Rua Visconde do Serro Frio", cep: "81050-080", bairro: "Novo Mundo" },
+            { rua: "Rua Coronel Herculano de Araújo", cep: "81050-090", bairro: "Novo Mundo" },
+            { rua: "Rua Affife Mansur", cep: "81050-180", bairro: "Novo Mundo" },
+            { rua: "Rua Bernardo Jacintho da Veiga", cep: "81050-100", bairro: "Novo Mundo" },
+            { rua: "Rua Frei Gaspar da Madre de Deus", cep: "81050-590", bairro: "Novo Mundo" },
+            { rua: "Rua Salomão Guelmann", cep: "81050-050", bairro: "Novo Mundo" },
+            { rua: "Rua Ildefonso Stockler de França", cep: "81020-040", bairro: "Novo Mundo" },
+            { rua: "Avenida Brasília", cep: "81020-010", bairro: "Novo Mundo" },
+            { rua: "Rua Francisco Raitani", cep: "81110-070", bairro: "Capão Raso" },
+            { rua: "Rua Hugo Gusso", cep: "81020-730", bairro: "Capão Raso" },
+            { rua: "Rua Itajubá", cep: "81070-190", bairro: "Portão" },
+            { rua: "Rua Pedro Zagonel", cep: "81050-110", bairro: "Novo Mundo" }
+        ];
+
+        // Buscar endereços na lista fixa
+        function buscarEnderecosLista(termoBusca = '') {
+            if (!termoBusca || termoBusca.length < 2) {
+                return enderecosDisponiveis.slice(0, 8); // Mostrar primeiros 8 se não há busca
+            }
+            
+            const termo = termoBusca.toLowerCase();
+            const enderecosEncontrados = enderecosDisponiveis.filter(endereco => {
+                return endereco.rua.toLowerCase().includes(termo) ||
+                       endereco.cep.includes(termo) ||
+                       endereco.bairro.toLowerCase().includes(termo);
+            });
+            
+            return enderecosEncontrados.slice(0, 8); // Limitar a 8 resultados
+        }
+
+        // ========== FUNÇÕES DE AUTOCOMPLETE ==========
+
+        // Mostrar dropdown de autocomplete
+        function mostrarAutocomplete(enderecos) {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            const lista = document.getElementById('autocompleteList');
+            
+            lista.innerHTML = '';
+            enderecosFiltrados = enderecos;
+            selectedIndex = -1;
+            
+            if (enderecos.length === 0) {
+                esconderAutocomplete();
+                return;
+            }
+            
+            enderecos.forEach((endereco, index) => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item px-4 py-3 cursor-pointer border-l-3 border-transparent';
+                
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="font-medium text-white">${endereco.rua}</div>
+                            <div class="text-sm text-gray-400">CEP: ${endereco.cep} - ${endereco.bairro}</div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-3">
+                            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                
+                item.addEventListener('click', () => selecionarEndereco(endereco));
+                lista.appendChild(item);
+            });
+            
+            dropdown.classList.remove('hidden');
+            autocompleteAtivo = true;
+        }
+
+        // Esconder dropdown de autocomplete
+        function esconderAutocomplete() {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            dropdown.classList.add('hidden');
+            autocompleteAtivo = false;
+            selectedIndex = -1;
+        }
+
+        // Selecionar endereço do autocomplete
+        function selecionarEndereco(endereco) {
+            elements.rua.value = endereco.rua;
+            elements.bairro.value = endereco.bairro;
+            elements.cidade.value = "Curitiba"; // Assumindo que todos são de Curitiba
+            elements.cep.value = endereco.cep;
+            
+            esconderAutocomplete();
+            
+            // Validar pedido
+            verificarValidadePedido();
+            
+            mostrarStatus(`Endereço selecionado: ${endereco.rua} - ${endereco.bairro}`, 'success');
+            
+            // Focar no campo número para o usuário digitar
+            elements.numero.focus();
+        }
+
+        // Navegar no autocomplete com teclado
+        function navegarAutocomplete(direcao) {
+            if (!autocompleteAtivo || enderecosFiltrados.length === 0) return;
+            
+            const items = document.querySelectorAll('.autocomplete-item');
+            
+            // Remover seleção anterior
+            if (selectedIndex >= 0 && items[selectedIndex]) {
+                items[selectedIndex].classList.remove('selected');
+            }
+            
+            // Calcular novo índice
+            if (direcao === 'down') {
+                selectedIndex = selectedIndex < enderecosFiltrados.length - 1 ? selectedIndex + 1 : 0;
+            } else if (direcao === 'up') {
+                selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : enderecosFiltrados.length - 1;
+            }
+            
+            // Aplicar nova seleção
+            if (items[selectedIndex]) {
+                items[selectedIndex].classList.add('selected');
+                items[selectedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // Confirmar seleção do autocomplete
+        function confirmarSelecaoAutocomplete() {
+            if (autocompleteAtivo && selectedIndex >= 0 && enderecosFiltrados[selectedIndex]) {
+                selecionarEndereco(enderecosFiltrados[selectedIndex]);
+                return true;
+            }
+            return false;
+        }
+
+        // Buscar e mostrar endereços para autocomplete
+        function buscarAutocompleteEnderecos(termo) {
+            const enderecos = buscarEnderecosLista(termo);
+            mostrarAutocomplete(enderecos);
+        }
+
+        // ========== FUNÇÕES DE AUTOCOMPLETE PARA CEP ==========
+
+        // Mostrar dropdown de autocomplete para CEP
+        function mostrarAutocompleteCep(enderecos) {
+            const dropdown = document.getElementById('autocompleteCepDropdown');
+            const lista = document.getElementById('autocompleteCepList');
+            
+            lista.innerHTML = '';
+            cepsFiltrados = enderecos;
+            selectedCepIndex = -1;
+            
+            if (enderecos.length === 0) {
+                esconderAutocompleteCep();
+                return;
+            }
+            
+            enderecos.forEach((endereco, index) => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item px-4 py-3 cursor-pointer border-l-3 border-transparent';
+                
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="font-medium text-white">${endereco.cep}</div>
+                            <div class="text-sm text-gray-400">${endereco.rua} - ${endereco.bairro}</div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-3">
+                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                
+                item.addEventListener('click', () => selecionarEnderecoPorCep(endereco));
+                lista.appendChild(item);
+            });
+            
+            dropdown.classList.remove('hidden');
+            autocompleteCepAtivo = true;
+        }
+
+        // Esconder dropdown de autocomplete CEP
+        function esconderAutocompleteCep() {
+            const dropdown = document.getElementById('autocompleteCepDropdown');
+            dropdown.classList.add('hidden');
+            autocompleteCepAtivo = false;
+            selectedCepIndex = -1;
+        }
+
+        // Selecionar endereço pelo CEP
+        function selecionarEnderecoPorCep(endereco) {
+            elements.cep.value = endereco.cep;
+            elements.rua.value = endereco.rua;
+            elements.bairro.value = endereco.bairro;
+            elements.cidade.value = "Curitiba";
+            
+            esconderAutocompleteCep();
+            
+            // Validar pedido
+            verificarValidadePedido();
+            
+            mostrarStatus(`Endereço selecionado: ${endereco.cep} - ${endereco.rua}`, 'success');
+            
+            // Focar no campo número para o usuário digitar
+            elements.numero.focus();
+        }
+
+        // Navegar no autocomplete CEP com teclado
+        function navegarAutocompleteCep(direcao) {
+            if (!autocompleteCepAtivo || cepsFiltrados.length === 0) return;
+            
+            const items = document.querySelectorAll('#autocompleteCepList .autocomplete-item');
+            
+            // Remover seleção anterior
+            if (selectedCepIndex >= 0 && items[selectedCepIndex]) {
+                items[selectedCepIndex].classList.remove('selected');
+            }
+            
+            // Calcular novo índice
+            if (direcao === 'down') {
+                selectedCepIndex = selectedCepIndex < cepsFiltrados.length - 1 ? selectedCepIndex + 1 : 0;
+            } else if (direcao === 'up') {
+                selectedCepIndex = selectedCepIndex > 0 ? selectedCepIndex - 1 : cepsFiltrados.length - 1;
+            }
+            
+            // Aplicar nova seleção
+            if (items[selectedCepIndex]) {
+                items[selectedCepIndex].classList.add('selected');
+                items[selectedCepIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // Confirmar seleção do autocomplete CEP
+        function confirmarSelecaoAutocompleteCep() {
+            if (autocompleteCepAtivo && selectedCepIndex >= 0 && cepsFiltrados[selectedCepIndex]) {
+                selecionarEnderecoPorCep(cepsFiltrados[selectedCepIndex]);
+                return true;
+            }
+            return false;
+        }
+
+        // Buscar e mostrar endereços por CEP
+        function buscarAutocompleteCep(termo) {
+            const enderecos = buscarEnderecosLista(termo);
+            mostrarAutocompleteCep(enderecos);
+        }
+
+        // ========== FUNÇÕES DO HISTÓRICO DE PEDIDOS ==========
+
+        // Mostrar modal do histórico
+        function mostrarModalHistorico() {
+            const modal = document.getElementById('modalHistorico');
+            modal.classList.remove('hidden');
+            carregarHistoricoPedidos();
+        }
+
+        // Esconder modal do histórico
+        function esconderModalHistorico() {
+            const modal = document.getElementById('modalHistorico');
+            modal.classList.add('hidden');
+        }
+
+        // Carregar histórico de pedidos
+        async function carregarHistoricoPedidos() {
+            const listaHistorico = document.getElementById('listaHistorico');
+            const carregando = document.getElementById('carregandoHistorico');
+            
+            listaHistorico.innerHTML = '';
+            carregando.classList.remove('hidden');
+            
+            try {
+                const pedidos = await buscarUltimosPedidos(10);
+                
+                if (pedidos.length === 0) {
+                    listaHistorico.innerHTML = `
+                        <div class="text-center py-8 text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p>Nenhum pedido encontrado</p>
+                            <p class="text-sm mt-1">Os pedidos aparecerão aqui conforme forem criados</p>
+                        </div>
+                    `;
+                } else {
+                    pedidos.forEach((pedido, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'glass-effect p-4 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer';
+                        
+                        const data = new Date(pedido.data).toLocaleString('pt-BR');
+                        const itensCount = pedido.itens.length;
+                        const primeirosItens = pedido.itens.slice(0, 3).map(item => 
+                            `${item.quantidade}${item.unidade} ${item.descricao}`
+                        ).join(', ');
+                        const maisItens = itensCount > 3 ? ` e mais ${itensCount - 3} itens...` : '';
+                        
+                        itemDiv.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="font-bold text-purple-400">${pedido.codigo}</span>
+                                        <span class="text-xs text-gray-400">${data}</span>
+                                    </div>
+                                    <div class="text-white font-medium mb-1">${pedido.cliente.nome}</div>
+                                    <div class="text-sm text-gray-400 mb-2">${pedido.cliente.telefone}</div>
+                                    <div class="text-sm text-gray-300">${primeirosItens}${maisItens}</div>
+                                    <div class="text-xs text-blue-400 mt-1">${pedido.formaPagamento}</div>
+                                </div>
+                                <button onclick="recuperarPedido('${pedido.codigo}')" class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all duration-200 hover:scale-105 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                    Recuperar
+                                </button>
+                            </div>
+                        `;
+                        
+                        listaHistorico.appendChild(itemDiv);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                listaHistorico.innerHTML = `
+                    <div class="text-center py-8 text-red-400">
+                        <p>Erro ao carregar histórico</p>
+                        <p class="text-sm mt-1">Tente novamente</p>
+                    </div>
+                `;
+            } finally {
+                carregando.classList.add('hidden');
+            }
+        }
+
+        // Recuperar pedido do histórico
+        async function recuperarPedido(codigoPedido) {
+            try {
+                const transaction = db.transaction(['pedidos'], 'readonly');
+                const store = transaction.objectStore('pedidos');
+                const request = store.get(codigoPedido);
+                
+                request.onsuccess = () => {
+                    const pedido = request.result;
+                    if (pedido) {
+                        // Preencher formulário com dados do pedido
+                        elements.telefone.value = pedido.cliente.telefone || '';
+                        elements.nome.value = pedido.cliente.nome || '';
+                        elements.cep.value = pedido.cliente.cep || '';
+                        elements.rua.value = pedido.cliente.rua || '';
+                        elements.numero.value = pedido.cliente.numero || '';
+                        elements.complemento.value = pedido.cliente.complemento || '';
+                        elements.bairro.value = pedido.cliente.bairro || '';
+                        elements.cidade.value = pedido.cliente.cidade || '';
+                        
+                        // Preencher itens
+                        itensCompra = [...pedido.itens];
+                        atualizarListaItens();
+                        
+                        // Preencher forma de pagamento
+                        document.querySelectorAll('.pagamento-btn').forEach(btn => {
+                            btn.classList.remove('bg-teal-600', 'border-teal-500');
+                            btn.classList.add('bg-gray-900', 'border-gray-700');
+                            
+                            if (btn.dataset.tipo === pedido.formaPagamento) {
+                                btn.classList.remove('bg-gray-900', 'border-gray-700');
+                                btn.classList.add('bg-teal-600', 'border-teal-500');
+                                formaPagamentoSelecionada = pedido.formaPagamento;
+                                elements.pagamentoSelecionado.textContent = btn.textContent;
+                            }
+                        });
+                        
+                        // Preencher observações
+                        if (pedido.observacoes) {
+                            document.getElementById('observacoesPedido').value = pedido.observacoes;
+                        }
+                        
+                        // Verificar validação e fechar modal
+                        verificarValidadePedido();
+                        esconderModalHistorico();
+                        
+                        mostrarStatus(`Pedido ${codigoPedido} recuperado com sucesso!`, 'success');
+                    }
+                };
+                
+                request.onerror = () => {
+                    mostrarStatus('Erro ao recuperar pedido', 'error');
+                };
+            } catch (error) {
+                console.error('Erro ao recuperar pedido:', error);
+                mostrarStatus('Erro ao recuperar pedido', 'error');
+            }
+        }
+
         // Mostrar lista de clientes encontrados
         function mostrarListaClientes(clientes) {
             const listaClientes = document.getElementById('listaClientes');
@@ -811,11 +1349,18 @@
                     <div class="flex-1">
                         <span class="font-medium">${item.quantidade} ${item.unidade} - ${item.descricao}</span>
                     </div>
-                    <button onclick="removerItem(${index})" class="ml-3 px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-all duration-200 hover:scale-110 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="editarItem(${index})" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-all duration-200 hover:scale-110 flex items-center gap-1" title="Editar item">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </button>
+                        <button onclick="removerItem(${index})" class="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-all duration-200 hover:scale-110 flex items-center gap-1" title="Remover item">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
                 `;
                 elements.listaItens.appendChild(div);
             });
@@ -839,6 +1384,26 @@
             itensCompra.splice(index, 1);
             atualizarListaItens();
             verificarValidadePedido();
+        }
+
+        function editarItem(index) {
+            const item = itensCompra[index];
+            const activeElements = getActiveElements();
+            
+            // Preencher formulário com dados do item
+            activeElements.quantidade.value = item.quantidade;
+            activeElements.unidade.value = item.unidade;
+            activeElements.descricao.value = item.descricao;
+            
+            // Remover item da lista
+            itensCompra.splice(index, 1);
+            atualizarListaItens();
+            verificarValidadePedido();
+            
+            // Focar no campo quantidade
+            activeElements.quantidade.focus();
+            
+            mostrarStatus('Item carregado para edição', 'info');
         }
 
         function limparCamposItem() {
@@ -866,26 +1431,176 @@
             e.target.value = formatarTelefone(e.target.value);
         });
 
+        // Input no campo CEP - formatação e autocomplete
         elements.cep.addEventListener('input', (e) => {
+            // Formatar CEP
             e.target.value = formatarCEP(e.target.value);
+            
+            // Autocomplete
+            const termo = e.target.value.trim();
+            clearTimeout(timeoutAutocompleteCep);
+            
+            if (termo.length >= 2) {
+                timeoutAutocompleteCep = setTimeout(() => {
+                    buscarAutocompleteCep(termo);
+                }, 300); // Debounce de 300ms
+            } else {
+                esconderAutocompleteCep();
+            }
         });
 
+        // Navegação por teclado no campo CEP
+        elements.cep.addEventListener('keydown', (e) => {
+            if (autocompleteCepAtivo) {
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        navegarAutocompleteCep('down');
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        navegarAutocompleteCep('up');
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (confirmarSelecaoAutocompleteCep()) {
+                            return;
+                        }
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        esconderAutocompleteCep();
+                        break;
+                }
+            }
+        });
+
+        // Focus no campo CEP - mostrar endereços disponíveis se vazio
+        elements.cep.addEventListener('focus', () => {
+            if (elements.cep.value.trim() === '') {
+                buscarAutocompleteCep('');
+            }
+        });
+
+        // Blur no campo CEP - esconder autocomplete após delay e fazer busca ViaCEP se necessário
         elements.cep.addEventListener('blur', async (e) => {
+            setTimeout(() => {
+                esconderAutocompleteCep();
+            }, 200); // Delay para permitir clique nas sugestões
+            
+            // Manter funcionalidade original de busca ViaCEP
             const cep = e.target.value.replace(/\D/g, '');
             if (cep.length === 8) {
-                // Adicionar indicador visual de loading no campo CEP
-                e.target.classList.add('animate-pulse');
-                try {
-                    const endereco = await buscarCEP(cep);
-                    elements.rua.value = endereco.logradouro || '';
-                    elements.bairro.value = endereco.bairro || '';
-                    elements.cidade.value = endereco.localidade || '';
-                    mostrarStatus('CEP encontrado!', 'success');
-                } catch (error) {
-                    mostrarStatus('CEP não encontrado', 'error');
-                } finally {
-                    e.target.classList.remove('animate-pulse');
+                // Verificar se já não foi preenchido pelo autocomplete
+                if (!elements.rua.value.trim()) {
+                    e.target.classList.add('animate-pulse');
+                    try {
+                        const endereco = await buscarCEP(cep);
+                        elements.rua.value = endereco.logradouro || '';
+                        elements.bairro.value = endereco.bairro || '';
+                        elements.cidade.value = endereco.localidade || '';
+                        mostrarStatus('CEP encontrado!', 'success');
+                    } catch (error) {
+                        mostrarStatus('CEP não encontrado', 'error');
+                    } finally {
+                        e.target.classList.remove('animate-pulse');
+                    }
                 }
+            }
+        });
+
+        // ========== EVENT LISTENERS PARA AUTOCOMPLETE ==========
+
+        // Input no campo rua - autocomplete
+        elements.rua.addEventListener('input', (e) => {
+            const termo = e.target.value.trim();
+            
+            clearTimeout(timeoutAutocomplete);
+            
+            if (termo.length >= 2) {
+                timeoutAutocomplete = setTimeout(() => {
+                    buscarAutocompleteEnderecos(termo);
+                }, 300); // Debounce de 300ms
+            } else {
+                esconderAutocomplete();
+            }
+        });
+
+        // Navegação por teclado no campo rua
+        elements.rua.addEventListener('keydown', (e) => {
+            if (autocompleteAtivo) {
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        navegarAutocomplete('down');
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        navegarAutocomplete('up');
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (confirmarSelecaoAutocomplete()) {
+                            return;
+                        }
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        esconderAutocomplete();
+                        break;
+                }
+            }
+        });
+
+        // Focus no campo rua - mostrar endereços disponíveis se vazio
+        elements.rua.addEventListener('focus', () => {
+            if (elements.rua.value.trim() === '') {
+                buscarAutocompleteEnderecos('');
+            }
+        });
+
+        // Blur no campo rua - esconder autocomplete após delay
+        elements.rua.addEventListener('blur', () => {
+            setTimeout(() => {
+                esconderAutocomplete();
+            }, 200); // Delay para permitir clique nas sugestões
+        });
+
+        // Click fora do autocomplete - esconder
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            const dropdownCep = document.getElementById('autocompleteCepDropdown');
+            const campoRua = elements.rua;
+            const campoCep = elements.cep;
+            
+            if (!dropdown.contains(e.target) && e.target !== campoRua) {
+                esconderAutocomplete();
+            }
+            
+            if (!dropdownCep.contains(e.target) && e.target !== campoCep) {
+                esconderAutocompleteCep();
+            }
+        });
+
+        // ========== EVENT LISTENERS PARA HISTÓRICO ==========
+
+        // Botão histórico
+        document.getElementById('historicoPedidos').addEventListener('click', mostrarModalHistorico);
+
+        // Fechar modal do histórico
+        document.getElementById('fecharModalHistorico').addEventListener('click', esconderModalHistorico);
+
+        // Click fora do modal para fechar
+        document.getElementById('modalHistorico').addEventListener('click', (e) => {
+            if (e.target.id === 'modalHistorico') {
+                esconderModalHistorico();
+            }
+        });
+
+        // Esc para fechar modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.getElementById('modalHistorico').classList.contains('hidden')) {
+                esconderModalHistorico();
             }
         });
 
@@ -1010,6 +1725,25 @@
             atualizarListaItens();
             limparCamposItem();
             verificarValidadePedido();
+        });
+
+        // Itens rápidos - águas 20L
+        document.querySelectorAll('.item-rapido').forEach(button => {
+            button.addEventListener('click', () => {
+                const nomeItem = button.dataset.item;
+                
+                const item = {
+                    id: Date.now(),
+                    quantidade: 1,
+                    unidade: 'un',
+                    descricao: nomeItem
+                };
+
+                itensCompra.push(item);
+                atualizarListaItens();
+                verificarValidadePedido();
+                mostrarStatus(`${nomeItem} adicionado!`, 'success');
+            });
         });
 
         // Forma de pagamento
@@ -1294,7 +2028,9 @@
 
         // Funções globais (chamadas pelo onclick e outras interações)
         window.removerItem = removerItem;
+        window.editarItem = editarItem;
         window.selecionarCliente = selecionarCliente;
+        window.recuperarPedido = recuperarPedido;
 
         // Inicializar quando a página carregar
         document.addEventListener('DOMContentLoaded', iniciarApp);
