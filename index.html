@@ -297,6 +297,7 @@
                 </div>
             </div>
 
+
             <!-- Lista de Itens -->
             <div class="glass-effect rounded-xl p-4 sm:p-6 slide-in">
                 <h2 class="text-xl font-semibold mb-4 text-teal-400 flex items-center gap-2">
@@ -515,7 +516,7 @@
             <div id="printCliente" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
             <div style="border-top: 1px dashed black; margin: 6px 0;"></div>
             <div id="printItens" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
-            <div style="border-top: 1px dashed black; margin: 6px 0;"></div>
+            <div id="printTaxaEntrega" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
             <div id="printPagamento" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
             <div id="printObservacoes" style="margin: 6px 0; font-size: 16px; font-weight: 600;"></div>
             <div style="text-align: center; margin-top: 10px;">
@@ -556,6 +557,16 @@
                     <p class="text-gray-400">Carregando histórico...</p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Rodapé com informações da taxa de entrega -->
+    <div class="mt-6 text-center">
+        <div id="taxaEntregaRodape" class="text-xs text-gray-500 opacity-75 hidden">
+            <!-- Taxa será exibida aqui -->
+        </div>
+        <div class="text-xs text-gray-600 mt-2">
+            Sistema de Pedidos © Super Negrelli
         </div>
     </div>
 
@@ -935,6 +946,369 @@
         // Timeout para debounce
         let timeoutBusca = null;
 
+        // ========== SISTEMA DE CÁLCULO DE TAXA DE ENTREGA ==========
+        
+        // Coordenadas da empresa (Rua Sebastião Malucelli 414 - Novo Mundo, Curitiba)
+        // Coordenadas mais precisas para o Novo Mundo, Curitiba
+        const EMPRESA_COORDS = {
+            latitude: -25.4195, // Coordenadas corrigidas para Novo Mundo
+            longitude: -49.2646,
+            endereco: "Rua Sebastião Malucelli, 414 - Novo Mundo, Curitiba/PR"
+        };
+        
+        // Taxas de entrega baseadas nos bairros
+        const TAXAS_POR_BAIRRO = {
+            // R$ 5 - até 3km (bairros próximos)
+            'novo mundo': { taxa: 5.00, descricao: "até 3km" },
+            'capão raso': { taxa: 5.00, descricao: "até 3km" },
+            'capao raso': { taxa: 5.00, descricao: "até 3km" },
+            'portão': { taxa: 5.00, descricao: "até 3km" },
+            'portao': { taxa: 5.00, descricao: "até 3km" },
+            'fanny': { taxa: 5.00, descricao: "até 3km" },
+            'lindoia': { taxa: 5.00, descricao: "até 3km" },
+            'lindóia': { taxa: 5.00, descricao: "até 3km" },
+            'vila izabel': { taxa: 5.00, descricao: "até 3km" },
+            'vila isabel': { taxa: 5.00, descricao: "até 3km" },
+            
+            // R$ 10 - até 6km
+            'santa quitéria': { taxa: 10.00, descricao: "até 6km" },
+            'santa quiteria': { taxa: 10.00, descricao: "até 6km" },
+            'fazendinha': { taxa: 10.00, descricao: "até 6km" },
+            'água verde': { taxa: 10.00, descricao: "até 6km" },
+            'agua verde': { taxa: 10.00, descricao: "até 6km" },
+            'parolin': { taxa: 10.00, descricao: "até 6km" },
+            'rebouças': { taxa: 10.00, descricao: "até 6km" },
+            'reboucas': { taxa: 10.00, descricao: "até 6km" },
+            'hauer': { taxa: 10.00, descricao: "até 6km" },
+            'prado velho': { taxa: 10.00, descricao: "até 6km" },
+            'pinheirinho': { taxa: 10.00, descricao: "até 6km" },
+            'sítio cercado': { taxa: 10.00, descricao: "até 6km" },
+            'sitio cercado': { taxa: 10.00, descricao: "até 6km" }
+        };
+        
+        // Cache para distâncias calculadas
+        const cacheDistancias = new Map();
+        
+        // Estado da taxa de entrega atual
+        let taxaEntregaAtual = 0;
+        let bairroAtual = '';
+        let descricaoTaxaAtual = '';
+
+        // Função para calcular distância entre duas coordenadas (Fórmula Haversine)
+        function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+            console.log('DEBUG - Calculando distância entre:');
+            console.log('  Ponto 1 (empresa):', lat1, lon1);
+            console.log('  Ponto 2 (cliente):', lat2, lon2);
+            
+            const toRad = (angle) => (angle * Math.PI) / 180;
+            const R = 6371; // Raio da Terra em km
+            
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            
+            console.log('  dLat:', dLat, 'dLon:', dLon);
+            
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                      
+            console.log('  Valor a:', a);
+                      
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distancia = R * c;
+            
+            console.log('  Distância bruta:', distancia);
+            
+            return Math.round(distancia * 100) / 100; // Arredondar para 2 casas decimais
+        }
+        
+        // Função para calcular taxa de entrega baseada no bairro
+        function calcularTaxaEntregaPorBairro(bairro) {
+            const bairroLimpo = bairro.toLowerCase().trim();
+            
+            // Verifica se o bairro está nas taxas específicas
+            if (TAXAS_POR_BAIRRO[bairroLimpo]) {
+                return TAXAS_POR_BAIRRO[bairroLimpo];
+            }
+            
+            // Para todos os demais bairros de Curitiba: R$ 15
+            return {
+                taxa: 15.00,
+                descricao: "acima de 6km"
+            };
+        }
+        
+        // Função para obter coordenadas de um endereço via ViaCEP (se disponível) ou geocodificação
+        async function obterCoordenadas(endereco) {
+            // Verificar cache primeiro
+            const chaveCache = endereco.cep || `${endereco.rua}-${endereco.cidade}`;
+            if (cacheDistancias.has(chaveCache)) {
+                return cacheDistancias.get(chaveCache);
+            }
+            
+            // Primeira tentativa: usar coordenadas baseadas no CEP
+            let coordenadas = obterCoordenadasPorCEP(endereco.cep);
+            
+            if (coordenadas) {
+                console.log('DEBUG - Usando coordenadas por CEP:', coordenadas);
+                cacheDistancias.set(chaveCache, coordenadas);
+                return coordenadas;
+            }
+            
+            // Segunda tentativa: usar API de geocodificação
+            try {
+                coordenadas = await geocodificarEndereco(endereco);
+                if (coordenadas) {
+                    console.log('DEBUG - Usando geocodificação:', coordenadas);
+                    cacheDistancias.set(chaveCache, coordenadas);
+                    return coordenadas;
+                }
+            } catch (error) {
+                console.warn('DEBUG - Erro na geocodificação:', error);
+            }
+            
+            // Fallback final: centro de Curitiba
+            console.warn('DEBUG - Usando fallback (centro)');
+            return { lat: -25.4284, lng: -49.2733, bairro: "Centro (fallback)" };
+        }
+        
+        // Função para geocodificar endereço usando API Nominatim (OpenStreetMap)
+        async function geocodificarEndereco(endereco) {
+            try {
+                const enderecoCompleto = `${endereco.rua}, ${endereco.bairro}, ${endereco.cidade}, Paraná, Brasil`;
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}&limit=1&countrycodes=br`;
+                
+                console.log('DEBUG - Geocodificando:', enderecoCompleto);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const dados = await response.json();
+                
+                if (dados && dados.length > 0) {
+                    const resultado = dados[0];
+                    return {
+                        lat: parseFloat(resultado.lat),
+                        lng: parseFloat(resultado.lon),
+                        bairro: endereco.bairro + " (geocodificado)"
+                    };
+                }
+                
+                return null;
+                
+            } catch (error) {
+                console.error('Erro na geocodificação:', error);
+                return null;
+            }
+        }
+        
+        // Função para obter coordenadas aproximadas baseadas no CEP
+        function obterCoordenadasPorCEP(cep) {
+            if (!cep) {
+                console.log('DEBUG - CEP não fornecido');
+                return null;
+            }
+            
+            // Remover formatação do CEP
+            const cepLimpo = cep.replace(/\D/g, '');
+            console.log('DEBUG - CEP limpo:', cepLimpo);
+            
+            // Usar algoritmo baseado nas regiões geográficas de Curitiba
+            return calcularCoordenadasPorAlgoritmo(cepLimpo);
+        }
+        
+        // Função que calcula coordenadas baseada em algoritmo geográfico do CEP
+        function calcularCoordenadasPorAlgoritmo(cepLimpo) {
+            if (cepLimpo.length < 5) {
+                return { lat: -25.4284, lng: -49.2733 }; // Default: Centro
+            }
+            
+            // Pegar os primeiros 3 dígitos para determinar a região macro
+            const regiao = parseInt(cepLimpo.substring(0, 3));
+            
+            // Pegar dígitos 4 e 5 para ajuste fino dentro da região
+            const subregiao = parseInt(cepLimpo.substring(3, 5));
+            
+            console.log('DEBUG - Região:', regiao, 'Sub-região:', subregiao);
+            
+            let baseLat, baseLng, nomeBairro;
+            
+            // Distribuição geográfica baseada nos códigos CEP de Curitiba
+            if (regiao >= 800 && regiao <= 805) {
+                // CENTRO E ADJACÊNCIAS (800XX-805XX)
+                baseLat = -25.425;
+                baseLng = -49.270;
+                nomeBairro = "Centro/Alto da Glória";
+                
+                // Ajustar baseado na sub-região
+                const ajusteLat = (subregiao - 50) * 0.0008;
+                const ajusteLng = (subregiao - 50) * 0.0006;
+                
+                return {
+                    lat: baseLat + ajusteLat,
+                    lng: baseLng + ajusteLng,
+                    bairro: nomeBairro
+                };
+            }
+            else if (regiao >= 806 && regiao <= 809) {
+                // REGIÃO CENTRO-SUL (806XX-809XX) 
+                baseLat = -25.445;
+                baseLng = -49.275;
+                nomeBairro = "Batel/Água Verde/Bigorrilho";
+                
+                const ajusteLat = (subregiao - 30) * 0.001;
+                const ajusteLng = (subregiao - 30) * 0.0008;
+                
+                return {
+                    lat: baseLat + ajusteLat,
+                    lng: baseLng + ajusteLng,
+                    bairro: nomeBairro
+                };
+            }
+            else if (regiao >= 810 && regiao <= 815) {
+                // REGIÃO LESTE/SUL-LESTE (810XX-815XX)
+                baseLat = -25.470;
+                baseLng = -49.230;
+                nomeBairro = "Novo Mundo/Portão/Capão Raso";
+                
+                // Novo Mundo é mais próximo (810XX-811XX)
+                if (regiao <= 811) {
+                    baseLat = -25.420; // Mais próximo da empresa
+                    baseLng = -49.265;
+                    nomeBairro = "Novo Mundo";
+                }
+                
+                const ajusteLat = (subregiao - 25) * 0.0012;
+                const ajusteLng = (subregiao - 25) * 0.0007;
+                
+                return {
+                    lat: baseLat + ajusteLat,
+                    lng: baseLng + ajusteLng,
+                    bairro: nomeBairro
+                };
+            }
+            else if (regiao >= 816 && regiao <= 819) {
+                // REGIÃO SUL DISTANTE (816XX-819XX) - Boqueirão, etc
+                baseLat = -25.535;
+                baseLng = -49.215;
+                nomeBairro = "Boqueirão/Xaxim/Hauer";
+                
+                const ajusteLat = (subregiao - 30) * 0.0015;
+                const ajusteLng = (subregiao - 30) * 0.0010;
+                
+                return {
+                    lat: baseLat + ajusteLat,
+                    lng: baseLng + ajusteLng,
+                    bairro: nomeBairro
+                };
+            }
+            else if (regiao >= 820 && regiao <= 829) {
+                // REGIÃO OESTE/NOROESTE (820XX-829XX) - Santa Felicidade, etc
+                baseLat = -25.390;
+                baseLng = -49.330;
+                nomeBairro = "Santa Felicidade/Cascatinha";
+                
+                const ajusteLat = (subregiao - 15) * 0.0008;
+                const ajusteLng = (subregiao - 15) * 0.0012;
+                
+                return {
+                    lat: baseLat + ajusteLat,
+                    lng: baseLng + ajusteLng,
+                    bairro: nomeBairro
+                };
+            }
+            else {
+                // OUTRAS REGIÕES ou CEPs não mapeados
+                console.warn('DEBUG - Região não mapeada:', regiao);
+                return {
+                    lat: -25.4284,
+                    lng: -49.2733,
+                    bairro: "Centro (padrão)"
+                };
+            }
+        }
+        
+        // Função principal para calcular distância e taxa de entrega
+        async function calcularTaxaEntregaPorEndereco(endereco) {
+            try {
+                console.log('DEBUG - Calculando taxa para bairro:', endereco.bairro);
+                
+                // Calcular taxa baseada no bairro
+                const resultado = calcularTaxaEntregaPorBairro(endereco.bairro);
+                
+                console.log('DEBUG - Taxa calculada:', resultado);
+                
+                // Atualizar estado global
+                taxaEntregaAtual = resultado.taxa;
+                bairroAtual = endereco.bairro;
+                descricaoTaxaAtual = resultado.descricao;
+                
+                return {
+                    taxa: resultado.taxa,
+                    descricao: resultado.descricao,
+                    bairro: endereco.bairro
+                };
+                
+            } catch (error) {
+                console.error('Erro ao calcular taxa por bairro:', error);
+                return null;
+            }
+        }
+        
+        // Função para calcular e exibir taxa de entrega na interface
+        async function calcularEExibirTaxaEntrega(endereco) {
+            try {
+                // Mostrar loading da taxa
+                atualizarDisplayTaxaEntrega('Calculando...', 0, 0, true);
+                
+                const resultado = await calcularTaxaEntregaPorEndereco(endereco);
+                
+                if (resultado) {
+                    atualizarDisplayTaxaEntrega(
+                        resultado.descricao,
+                        resultado.taxa,
+                        resultado.bairro,
+                        false
+                    );
+                    
+                    mostrarStatus(
+                        `Taxa de entrega: R$ ${resultado.taxa.toFixed(2)} (${resultado.bairro} - ${resultado.descricao})`,
+                        'info'
+                    );
+                } else {
+                    atualizarDisplayTaxaEntrega('Erro no cálculo', 0, '', false, true);
+                    mostrarStatus('Não foi possível calcular a taxa de entrega', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao calcular taxa de entrega:', error);
+                atualizarDisplayTaxaEntrega('Erro no cálculo', 0, '', false, true);
+                mostrarStatus('Erro ao calcular taxa de entrega', 'error');
+            }
+        }
+        
+        // Função para atualizar o display da taxa de entrega no rodapé
+        function atualizarDisplayTaxaEntrega(descricao, taxa, bairro, loading = false, erro = false) {
+            const rodapeTaxa = document.getElementById('taxaEntregaRodape');
+            
+            if (rodapeTaxa) {
+                if (loading) {
+                    rodapeTaxa.innerHTML = `🚚 Calculando taxa de entrega...`;
+                    rodapeTaxa.classList.remove('hidden');
+                } else if (erro) {
+                    rodapeTaxa.innerHTML = `⚠️ Não foi possível calcular a taxa de entrega`;
+                    rodapeTaxa.classList.remove('hidden');
+                } else if (taxa > 0) {
+                    rodapeTaxa.innerHTML = `🚚 Taxa de entrega: R$ ${taxa.toFixed(2)} (${bairro} - ${descricao})`;
+                    rodapeTaxa.classList.remove('hidden');
+                } else {
+                    rodapeTaxa.classList.add('hidden');
+                }
+            }
+        }
+
         // Função para buscar endereços via ViaCEP API
         async function buscarEnderecosViaCEP(termo, cidade = 'Curitiba', uf = 'PR') {
             if (!termo || termo.length < 3) {
@@ -1108,13 +1482,16 @@
         }
 
         // Selecionar endereço do autocomplete
-        function selecionarEndereco(endereco) {
+        async function selecionarEndereco(endereco) {
             elements.rua.value = endereco.rua;
             elements.bairro.value = endereco.bairro;
             elements.cidade.value = endereco.cidade || "Curitiba";
             elements.cep.value = endereco.cep;
             
             esconderAutocomplete();
+            
+            // Calcular taxa de entrega
+            await calcularEExibirTaxaEntrega(endereco);
             
             // Validar pedido
             verificarValidadePedido();
@@ -1973,6 +2350,11 @@
                 texto += `• ${item.quantidade} ${item.unidade} - ${item.descricao}\n`;
             });
             
+            // Adicionar taxa de entrega se não for retirada
+            if (!modoRetirada && taxaEntregaAtual > 0) {
+                texto += `🚚 *Taxa de Entrega:* R$ ${taxaEntregaAtual.toFixed(2)} (${bairroAtual} - ${descricaoTaxaAtual})\n`;
+            }
+            
             texto += `💳 *Pagamento:* ${document.querySelector('.pagamento-btn.bg-teal-600').textContent}`;
             
             if (formaPagamentoSelecionada === 'dinheiro' && elements.valorTroco.value) {
@@ -2047,6 +2429,13 @@
                 itensHTML += `${item.quantidade} ${item.unidade} - ${item.descricao}<br>`;
             });
             document.getElementById('printItens').innerHTML = itensHTML;
+            
+            // Adicionar taxa de entrega se não for retirada
+            if (!modoRetirada && taxaEntregaAtual > 0) {
+                document.getElementById('printTaxaEntrega').innerHTML = `<strong>TAXA DE ENTREGA:</strong><br>R$ ${taxaEntregaAtual.toFixed(2)} (${bairroAtual} - ${descricaoTaxaAtual})<br><div style="border-top: 1px dashed black; margin: 5px 0;"></div>`;
+            } else {
+                document.getElementById('printTaxaEntrega').innerHTML = '';
+            }
             
             let pagamentoText = document.querySelector('.pagamento-btn.bg-teal-600').textContent;
             if (formaPagamentoSelecionada === 'dinheiro' && elements.valorTroco.value) {
