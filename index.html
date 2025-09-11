@@ -139,6 +139,49 @@
                     Dados do Cliente
                 </h2>
                 
+                <!-- Toggle Tipo de Pedido -->
+                <div class="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-600">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm font-medium text-orange-400 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 12a5 5 0 01-5-5h10a5 5 0 01-5 5z"/>
+                            </svg>
+                            Tipo de Pedido
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <span id="labelEntrega" class="text-sm font-medium text-teal-400">Entrega</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggleTipoPedido" class="sr-only peer">
+                                <div class="w-11 h-6 bg-teal-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                            </label>
+                            <span id="labelRetirada" class="text-sm font-medium text-gray-400">Retirada</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos específicos para Retirada/Encomenda -->
+                    <div id="camposRetirada" class="hidden mt-4 pt-4 border-t border-gray-600">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-orange-400">Data de Retirada</label>
+                                <input type="date" id="dataRetirada" 
+                                       class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 input-glow">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-orange-400">Horário de Retirada</label>
+                                <input type="time" id="horarioRetirada" 
+                                       class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 input-glow">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="block text-sm font-medium mb-2 text-orange-400">Observações da Encomenda</label>
+                            <textarea id="observacoesRetirada" 
+                                      placeholder="Observações específicas para a retirada/encomenda..."
+                                      class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 input-glow"
+                                      rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="space-y-4">
                     <!-- Busca de Cliente -->
                     <div>
@@ -276,6 +319,7 @@
                             <option value="dz">Dúzia</option>
                             <option value="fd">Fardo</option>
                             <option value="cx">Caixa</option>
+                            <option value="R$">Reais (R$)</option>
                         </select>
                         <input type="text" id="descricao" placeholder="Descrição do produto"
                                class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500">
@@ -293,6 +337,7 @@
                             <option value="dz">dz</option>
                             <option value="fd">fd</option>
                             <option value="cx">cx</option>
+                            <option value="R$">R$</option>
                         </select>
                         <input type="text" id="descricao-desktop" placeholder="Descrição do produto"
                                class="col-span-7 p-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
@@ -303,6 +348,26 @@
                         </svg>
                         Adicionar Item
                     </button>
+                    
+                    <!-- Importação de Lista do WhatsApp -->
+                    <div class="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
+                        <h4 class="text-sm font-medium mb-3 text-purple-400 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Importar Lista do WhatsApp
+                        </h4>
+                        <textarea id="listaWhatsApp" 
+                                  placeholder="Cole aqui a lista do cliente do WhatsApp...&#10;&#10;Exemplos suportados:&#10;• 2kg de carne&#10;• 1 pacote de açúcar&#10;• R$ 15,00 de frango&#10;• 3 un leite&#10;• 500g presunto"
+                                  class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                                  rows="4"></textarea>
+                        <button id="importarLista" class="mt-3 w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            Importar Lista
+                        </button>
+                    </div>
                     
                     <!-- Itens Rápidos -->
                     <div class="mt-4">
@@ -509,6 +574,7 @@
         // Estado da aplicação
         let itensCompra = [];
         let formaPagamentoSelecionada = '';
+        let modoRetirada = false;
         
         // Estado do autocomplete
         let autocompleteAtivo = false;
@@ -1416,7 +1482,10 @@
         function verificarValidadePedido() {
             const telefoneValido = elements.telefone.value.replace(/\D/g, '').length >= 10;
             const nomeValido = elements.nome.value.trim() !== '';
-            const enderecoValido = elements.rua.value.trim() !== '' && elements.cidade.value.trim() !== '';
+            
+            // No modo retirada, endereço é opcional
+            const enderecoValido = modoRetirada ? true : (elements.rua.value.trim() !== '' && elements.cidade.value.trim() !== '');
+            
             const temItens = itensCompra.length > 0;
             const temPagamento = formaPagamentoSelecionada !== '';
 
@@ -1782,8 +1851,28 @@
             let texto = `🛒 *PEDIDO - ${gerarCodigoPedido()}*\n\n`;
             texto += `👤 *Cliente:* ${cliente.nome}\n`;
             texto += `📞 *Telefone:* ${cliente.telefone}\n`;
-            texto += `📍 *Endereço:* ${cliente.endereco}\n\n`;
-            texto += `🛍️ *Itens:*\n`;
+            
+            if (modoRetirada) {
+                const dataRetirada = document.getElementById('dataRetirada').value;
+                const horarioRetirada = document.getElementById('horarioRetirada').value;
+                const observacoesRetirada = document.getElementById('observacoesRetirada').value.trim();
+                
+                texto += `🏪 *RETIRADA/ENCOMENDA*\n`;
+                if (dataRetirada) {
+                    const dataFormatada = new Date(dataRetirada + 'T00:00:00').toLocaleDateString('pt-BR');
+                    texto += `📅 *Data:* ${dataFormatada}\n`;
+                }
+                if (horarioRetirada) {
+                    texto += `⏰ *Horário:* ${horarioRetirada}\n`;
+                }
+                if (observacoesRetirada) {
+                    texto += `📝 *Obs. Retirada:* ${observacoesRetirada}\n`;
+                }
+            } else {
+                texto += `📍 *Endereço:* ${cliente.endereco}\n`;
+            }
+            
+            texto += `\n🛍️ *Itens:*\n`;
             
             itensCompra.forEach(item => {
                 texto += `• ${item.quantidade} ${item.unidade} - ${item.descricao}\n`;
@@ -1833,14 +1922,30 @@
             document.getElementById('printPedidoCodigo').textContent = codigo;
             document.getElementById('printData').textContent = agora.toLocaleString('pt-BR');
             
-            document.getElementById('printCliente').innerHTML = `
-                <strong>CLIENTE:</strong><br>
-                ${cliente.nome}<br>
-                ${cliente.telefone}<br>
-                ${elements.rua.value}, ${elements.numero.value}<br>
-                ${elements.complemento.value ? elements.complemento.value + '<br>' : ''}
-                ${elements.bairro.value}, ${elements.cidade.value}
-            `;
+            // Dados do cliente variam conforme o tipo de pedido
+            if (modoRetirada) {
+                const dataRetirada = document.getElementById('dataRetirada').value;
+                const horarioRetirada = document.getElementById('horarioRetirada').value;
+                const dataFormatada = dataRetirada ? new Date(dataRetirada + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+                
+                document.getElementById('printCliente').innerHTML = `
+                    <strong>RETIRADA/ENCOMENDA:</strong><br>
+                    ${cliente.nome}<br>
+                    ${cliente.telefone}<br>
+                    ${dataRetirada && horarioRetirada ? `<strong>Para:</strong> ${dataFormatada} às ${horarioRetirada}` : ''}
+                    ${dataRetirada && !horarioRetirada ? `<strong>Para:</strong> ${dataFormatada}` : ''}
+                    ${!dataRetirada && horarioRetirada ? `<strong>Horário:</strong> ${horarioRetirada}` : ''}
+                `;
+            } else {
+                document.getElementById('printCliente').innerHTML = `
+                    <strong>CLIENTE:</strong><br>
+                    ${cliente.nome}<br>
+                    ${cliente.telefone}<br>
+                    ${elements.rua.value}, ${elements.numero.value}<br>
+                    ${elements.complemento.value ? elements.complemento.value + '<br>' : ''}
+                    ${elements.bairro.value}, ${elements.cidade.value}
+                `;
+            }
             
             let itensHTML = '<strong>ITENS:</strong><br>';
             itensCompra.forEach(item => {
@@ -2031,6 +2136,120 @@
         window.editarItem = editarItem;
         window.selecionarCliente = selecionarCliente;
         window.recuperarPedido = recuperarPedido;
+
+        // Toggle entre Entrega e Retirada
+        document.getElementById('toggleTipoPedido').addEventListener('change', (e) => {
+            modoRetirada = e.target.checked;
+            const camposRetirada = document.getElementById('camposRetirada');
+            const labelEntrega = document.getElementById('labelEntrega');
+            const labelRetirada = document.getElementById('labelRetirada');
+            
+            if (modoRetirada) {
+                camposRetirada.classList.remove('hidden');
+                labelEntrega.classList.remove('text-teal-400');
+                labelEntrega.classList.add('text-gray-400');
+                labelRetirada.classList.remove('text-gray-400');
+                labelRetirada.classList.add('text-orange-400');
+            } else {
+                camposRetirada.classList.add('hidden');
+                labelEntrega.classList.remove('text-gray-400');
+                labelEntrega.classList.add('text-teal-400');
+                labelRetirada.classList.remove('text-orange-400');
+                labelRetirada.classList.add('text-gray-400');
+            }
+            
+            verificarValidadePedido();
+        });
+
+        // Importar lista do WhatsApp
+        document.getElementById('importarLista').addEventListener('click', () => {
+            const textarea = document.getElementById('listaWhatsApp');
+            const lista = textarea.value.trim();
+            
+            if (!lista) {
+                mostrarStatus('Cole uma lista do WhatsApp primeiro', 'error');
+                return;
+            }
+            
+            const itensImportados = parseWhatsAppList(lista);
+            
+            if (itensImportados.length === 0) {
+                mostrarStatus('Nenhum item válido encontrado na lista', 'error');
+                return;
+            }
+            
+            // Adicionar todos os itens à lista
+            itensImportados.forEach(item => {
+                itensCompra.push(item);
+            });
+            
+            atualizarListaItens();
+            verificarValidadePedido();
+            textarea.value = ''; // Limpar o campo
+            
+            mostrarStatus(`${itensImportados.length} item(ns) importado(s) com sucesso!`, 'success');
+        });
+        
+        // Função para fazer parse da lista do WhatsApp
+        function parseWhatsAppList(texto) {
+            const linhas = texto.split('\n').filter(linha => linha.trim());
+            const itens = [];
+            
+            linhas.forEach(linha => {
+                const item = parseLinhaItem(linha.trim());
+                if (item) {
+                    itens.push(item);
+                }
+            });
+            
+            return itens;
+        }
+        
+        // Função para fazer parse de uma linha individual
+        function parseLinhaItem(linha) {
+            // Remover marcadores como •, -, * do início
+            linha = linha.replace(/^[\u2022\-\*\+]\s*/, '').trim();
+            
+            // Padrão 1: "R$ 15,00 de frango" ou "R$15 de carne"
+            let match = linha.match(/^R\$\s*([\d,\.]+)\s+de\s+(.+)$/i);
+            if (match) {
+                const valor = parseFloat(match[1].replace(',', '.'));
+                const descricao = match[2].trim();
+                return {
+                    quantidade: valor,
+                    unidade: 'R$',
+                    descricao: descricao
+                };
+            }
+            
+            // Padrão 2: "2kg de carne" ou "500g presunto"
+            match = linha.match(/^([\d,\.]+)\s*(kg|g|un|dz|bj|fd|cx)\s*(?:de\s+)?(.+)$/i);
+            if (match) {
+                const quantidade = parseFloat(match[1].replace(',', '.'));
+                const unidade = match[2].toLowerCase();
+                const descricao = match[3].trim();
+                return {
+                    quantidade: quantidade,
+                    unidade: unidade,
+                    descricao: descricao
+                };
+            }
+            
+            // Padrão 3: "1 pacote de açúcar" ou "3 leite"
+            match = linha.match(/^([\d,\.]+)\s+(.+)$/i);
+            if (match) {
+                const quantidade = parseFloat(match[1].replace(',', '.'));
+                const descricao = match[2].trim();
+                return {
+                    quantidade: quantidade,
+                    unidade: 'un',
+                    descricao: descricao
+                };
+            }
+            
+            // Se não conseguiu fazer parse, retorna null
+            return null;
+        }
 
         // Inicializar quando a página carregar
         document.addEventListener('DOMContentLoaded', iniciarApp);
