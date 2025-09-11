@@ -927,51 +927,123 @@
             });
         }
 
-        // ========== LISTA FIXA DE ENDEREÇOS PARA AUTOCOMPLETE ==========
+        // ========== SISTEMA DINÂMICO DE BUSCA DE ENDEREÇOS VIA VIACEP ==========
 
-        const enderecosDisponiveis = [
-            { rua: "Rua Francisco Ader", cep: "81050-140", bairro: "Novo Mundo" },
-            { rua: "Rua Gustavo Schier", cep: "81050-130", bairro: "Novo Mundo" },
-            { rua: "Rua Olga de Araújo Espíndola", cep: "81050-280", bairro: "Novo Mundo" },
-            { rua: "Rua Paulina Ader", cep: "81050-250", bairro: "Novo Mundo" },
-            { rua: "Rua Orlando Albino Von der Osten", cep: "81050-160", bairro: "Novo Mundo" },
-            { rua: "Rua Primo Lourenço Tosin", cep: "81050-290", bairro: "Novo Mundo" },
-            { rua: "Rua Deputado Waldemiro Pedroso", cep: "81050-150", bairro: "Novo Mundo" },
-            { rua: "Rua Antônio Gasparin", cep: "81050-210", bairro: "Novo Mundo" },
-            { rua: "Rua João Bonat", cep: "81050-170", bairro: "Novo Mundo" },
-            { rua: "Rua Luiz Leopoldo Landal", cep: "81050-120", bairro: "Novo Mundo" },
-            { rua: "Rua Visconde do Serro Frio", cep: "81050-080", bairro: "Novo Mundo" },
-            { rua: "Rua Coronel Herculano de Araújo", cep: "81050-090", bairro: "Novo Mundo" },
-            { rua: "Rua Affife Mansur", cep: "81050-180", bairro: "Novo Mundo" },
-            { rua: "Rua Bernardo Jacintho da Veiga", cep: "81050-100", bairro: "Novo Mundo" },
-            { rua: "Rua Frei Gaspar da Madre de Deus", cep: "81050-590", bairro: "Novo Mundo" },
-            { rua: "Rua Salomão Guelmann", cep: "81050-050", bairro: "Novo Mundo" },
-            { rua: "Rua Ildefonso Stockler de França", cep: "81020-040", bairro: "Novo Mundo" },
-            { rua: "Avenida Brasília", cep: "81020-010", bairro: "Novo Mundo" },
-            { rua: "Rua Francisco Raitani", cep: "81110-070", bairro: "Capão Raso" },
-            { rua: "Rua Hugo Gusso", cep: "81020-730", bairro: "Capão Raso" },
-            { rua: "Rua Itajubá", cep: "81070-190", bairro: "Portão" },
-            { rua: "Rua Pedro Zagonel", cep: "81050-110", bairro: "Novo Mundo" }
-        ];
+        // Cache para armazenar resultados de busca
+        const cacheEnderecos = new Map();
+        
+        // Timeout para debounce
+        let timeoutBusca = null;
 
-        // Buscar endereços na lista fixa
-        function buscarEnderecosLista(termoBusca = '') {
-            if (!termoBusca || termoBusca.length < 2) {
-                return enderecosDisponiveis.slice(0, 8); // Mostrar primeiros 8 se não há busca
+        // Função para buscar endereços via ViaCEP API
+        async function buscarEnderecosViaCEP(termo, cidade = 'Curitiba', uf = 'PR') {
+            if (!termo || termo.length < 3) {
+                return [];
             }
             
-            const termo = termoBusca.toLowerCase();
-            const enderecosEncontrados = enderecosDisponiveis.filter(endereco => {
-                return endereco.rua.toLowerCase().includes(termo) ||
-                       endereco.cep.includes(termo) ||
-                       endereco.bairro.toLowerCase().includes(termo);
-            });
+            // Criar chave para cache
+            const chaveCache = `${uf}-${cidade}-${termo}`.toLowerCase();
             
-            return enderecosEncontrados.slice(0, 8); // Limitar a 8 resultados
+            // Verificar cache primeiro
+            if (cacheEnderecos.has(chaveCache)) {
+                return cacheEnderecos.get(chaveCache);
+            }
+            
+            try {
+                // Fazer requisição para ViaCEP
+                const url = `https://viacep.com.br/ws/${uf}/${encodeURIComponent(cidade)}/${encodeURIComponent(termo)}/json/`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    return [];
+                }
+                
+                const dados = await response.json();
+                
+                // ViaCEP retorna um array ou um objeto com erro
+                let enderecos = [];
+                if (Array.isArray(dados)) {
+                    enderecos = dados.map(endereco => ({
+                        rua: endereco.logradouro,
+                        cep: endereco.cep,
+                        bairro: endereco.bairro,
+                        cidade: endereco.localidade,
+                        uf: endereco.uf
+                    }));
+                } else if (dados && !dados.erro) {
+                    enderecos = [{
+                        rua: dados.logradouro,
+                        cep: dados.cep,
+                        bairro: dados.bairro,
+                        cidade: dados.localidade,
+                        uf: dados.uf
+                    }];
+                }
+                
+                // Armazenar no cache
+                cacheEnderecos.set(chaveCache, enderecos);
+                
+                // Limitar cache para evitar consumo excessivo de memória
+                if (cacheEnderecos.size > 100) {
+                    const primeiraChave = cacheEnderecos.keys().next().value;
+                    cacheEnderecos.delete(primeiraChave);
+                }
+                
+                return enderecos;
+                
+            } catch (error) {
+                console.error('Erro ao buscar endereços via ViaCEP:', error);
+                return [];
+            }
+        }
+        
+        // Buscar endereços com debounce
+        function buscarEnderecosLista(termoBusca = '') {
+            return new Promise((resolve) => {
+                // Limpar timeout anterior
+                if (timeoutBusca) {
+                    clearTimeout(timeoutBusca);
+                }
+                
+                // Se termo muito pequeno, retornar vazio
+                if (!termoBusca || termoBusca.length < 3) {
+                    resolve([]);
+                    return;
+                }
+                
+                // Aplicar debounce de 400ms
+                timeoutBusca = setTimeout(async () => {
+                    try {
+                        const enderecos = await buscarEnderecosViaCEP(termoBusca);
+                        resolve(enderecos.slice(0, 15)); // Limitar a 15 resultados
+                    } catch (error) {
+                        console.error('Erro na busca de endereços:', error);
+                        resolve([]);
+                    }
+                }, 400);
+            });
         }
 
         // ========== FUNÇÕES DE AUTOCOMPLETE ==========
 
+        // Mostrar loading no autocomplete
+        function mostrarLoadingAutocomplete() {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            const lista = document.getElementById('autocompleteList');
+            
+            lista.innerHTML = `
+                <div class="px-4 py-3 text-center">
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-gray-400">Buscando endereços...</span>
+                    </div>
+                </div>
+            `;
+            
+            dropdown.classList.remove('hidden');
+            autocompleteAtivo = true;
+        }
+        
         // Mostrar dropdown de autocomplete
         function mostrarAutocomplete(enderecos) {
             const dropdown = document.getElementById('autocompleteDropdown');
@@ -982,7 +1054,20 @@
             selectedIndex = -1;
             
             if (enderecos.length === 0) {
-                esconderAutocomplete();
+                // Mostrar mensagem de "nenhum resultado encontrado"
+                lista.innerHTML = `
+                    <div class="px-4 py-3 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z"/>
+                            </svg>
+                            <span class="text-gray-400">Nenhum endereço encontrado</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Digite pelo menos 3 caracteres</div>
+                    </div>
+                `;
+                dropdown.classList.remove('hidden');
+                autocompleteAtivo = true;
                 return;
             }
             
@@ -995,6 +1080,7 @@
                         <div class="flex-1">
                             <div class="font-medium text-white">${endereco.rua}</div>
                             <div class="text-sm text-gray-400">CEP: ${endereco.cep} - ${endereco.bairro}</div>
+                            <div class="text-xs text-gray-500">${endereco.cidade}/${endereco.uf}</div>
                         </div>
                         <div class="flex items-center gap-2 ml-3">
                             <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1025,7 +1111,7 @@
         function selecionarEndereco(endereco) {
             elements.rua.value = endereco.rua;
             elements.bairro.value = endereco.bairro;
-            elements.cidade.value = "Curitiba"; // Assumindo que todos são de Curitiba
+            elements.cidade.value = endereco.cidade || "Curitiba";
             elements.cep.value = endereco.cep;
             
             esconderAutocomplete();
@@ -1033,7 +1119,7 @@
             // Validar pedido
             verificarValidadePedido();
             
-            mostrarStatus(`Endereço selecionado: ${endereco.rua} - ${endereco.bairro}`, 'success');
+            mostrarStatus(`Endereço selecionado: ${endereco.rua} - ${endereco.cidade}/${endereco.uf}`, 'success');
             
             // Focar no campo número para o usuário digitar
             elements.numero.focus();
@@ -1074,9 +1160,19 @@
         }
 
         // Buscar e mostrar endereços para autocomplete
-        function buscarAutocompleteEnderecos(termo) {
-            const enderecos = buscarEnderecosLista(termo);
-            mostrarAutocomplete(enderecos);
+        async function buscarAutocompleteEnderecos(termo) {
+            // Mostrar loading se termo >= 3 caracteres
+            if (termo.length >= 3) {
+                mostrarLoadingAutocomplete();
+            }
+            
+            try {
+                const enderecos = await buscarEnderecosLista(termo);
+                mostrarAutocomplete(enderecos);
+            } catch (error) {
+                console.error('Erro ao buscar endereços:', error);
+                mostrarAutocomplete([]);
+            }
         }
 
         // ========== FUNÇÕES DE AUTOCOMPLETE PARA CEP ==========
@@ -1134,7 +1230,7 @@
             elements.cep.value = endereco.cep;
             elements.rua.value = endereco.rua;
             elements.bairro.value = endereco.bairro;
-            elements.cidade.value = "Curitiba";
+            elements.cidade.value = endereco.cidade || "Curitiba";
             
             esconderAutocompleteCep();
             
@@ -1182,9 +1278,14 @@
         }
 
         // Buscar e mostrar endereços por CEP
-        function buscarAutocompleteCep(termo) {
-            const enderecos = buscarEnderecosLista(termo);
-            mostrarAutocompleteCep(enderecos);
+        async function buscarAutocompleteCep(termo) {
+            try {
+                const enderecos = await buscarEnderecosLista(termo);
+                mostrarAutocompleteCep(enderecos);
+            } catch (error) {
+                console.error('Erro ao buscar endereços por CEP:', error);
+                mostrarAutocompleteCep([]);
+            }
         }
 
         // ========== FUNÇÕES DO HISTÓRICO DE PEDIDOS ==========
