@@ -314,6 +314,7 @@
                 
                 <!-- Toggle Tipo de Pedido -->
                 <div class="mb-6 p-4 rounded-lg" style="background: var(--surface); border: 1px solid var(--border);">
+                    <!-- Toggle Entrega / Retirada -->
                     <div class="flex items-center justify-between mb-3">
                         <label class="text-sm font-medium flex items-center gap-2" style="color: var(--text-secondary);">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--accent);">
@@ -332,30 +333,44 @@
                             <span id="labelRetirada" class="text-sm font-medium" style="color: var(--text-muted);">Retirada</span>
                         </div>
                     </div>
-                    
-                    <!-- Campos específicos para Retirada/Encomenda -->
-                    <div id="camposRetirada" class="hidden mt-4 pt-4" style="border-top: 1px solid var(--border);">
+
+                    <!-- Toggle Modo Encomenda -->
+                    <div class="flex items-center justify-between mt-3 pt-3" style="border-top: 1px solid var(--border);">
+                        <label class="text-sm font-medium flex items-center gap-2" style="color: var(--text-secondary);">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--accent);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            Modo Encomenda
+                        </label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggleModoEncomenda" class="sr-only peer">
+                            <div id="trackModoEncomenda" class="w-11 h-6 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-focus:outline-none"
+                                 style="background: var(--surface-hover); border: 1px solid var(--border);">
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Campos específicos para Encomenda -->
+                    <div id="camposEncomenda" class="hidden mt-4 pt-4" style="border-top: 1px solid var(--border);">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Data de Retirada</label>
-                                <input type="date" id="dataRetirada"
+                                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Data da Encomenda <span class="text-red-400">*</span></label>
+                                <input type="date" id="dataEncomenda"
                                        class="w-full p-3 rounded-lg input-focus"
                                        style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Horário de Retirada</label>
-                                <input type="time" id="horarioRetirada"
+                                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Horário da Encomenda <span class="text-red-400">*</span></label>
+                                <input type="time" id="horarioEncomenda"
                                        class="w-full p-3 rounded-lg input-focus"
                                        style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);">
                             </div>
                         </div>
                         <div class="mt-3">
-                            <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Observações da Encomenda</label>
-                            <textarea id="observacoesRetirada"
-                                      placeholder="Observações específicas para a retirada/encomenda..."
-                                      class="w-full p-3 rounded-lg input-focus"
-                                      style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);"
-                                      rows="2"></textarea>
+                            <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Valor do Sinal / Entrada (R$)</label>
+                            <input type="number" id="valorSinal" placeholder="0,00" min="0" step="0.01"
+                                   class="w-full p-3 rounded-lg input-focus"
+                                   style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);">
                         </div>
                     </div>
                 </div>
@@ -521,6 +536,59 @@
                         <input type="text" id="descricao-desktop" placeholder="Descrição do produto"
                                class="col-span-7 p-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
                     </div>
+                    <!-- Checkbox É Bolo (elemento único compartilhado entre mobile e desktop) -->
+                    <div class="flex items-center gap-3 px-1 py-1">
+                        <input type="checkbox" id="ehBolo"
+                               class="w-4 h-4 rounded cursor-pointer"
+                               style="accent-color: var(--accent);">
+                        <label for="ehBolo" class="text-sm font-medium cursor-pointer flex items-center gap-2" style="color: var(--text-secondary);">
+                            🎂 É bolo?
+                        </label>
+                    </div>
+
+                    <!-- Campos de Bolo (ocultos por padrão) -->
+                    <div id="camposBolo" class="hidden p-4 rounded-lg space-y-3" style="background: var(--surface); border: 1px solid var(--border);">
+                        <p class="text-sm font-medium" style="color: var(--accent);">Detalhes do Bolo</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs mb-1" style="color: var(--text-muted);">Formato <span class="text-red-400">*</span></label>
+                                <select id="boloFormato"
+                                        class="w-full p-2 rounded-lg input-focus text-sm"
+                                        style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);">
+                                    <option value="redondo">Redondo</option>
+                                    <option value="quadrado">Quadrado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs mb-1" style="color: var(--text-muted);">Peso (kg) <span class="text-red-400">*</span></label>
+                                <input type="number" id="boloKg" placeholder="ex: 2" min="0.5" step="0.5"
+                                       class="w-full p-2 rounded-lg input-focus text-sm"
+                                       style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs mb-1" style="color: var(--text-muted);">Sabor <span class="text-red-400">*</span></label>
+                            <input type="text" id="boloSabor" placeholder="ex: Chocolate, Morango..."
+                                   class="w-full p-2 rounded-lg input-focus text-sm"
+                                   style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);">
+                        </div>
+                        <div>
+                            <label class="block text-xs mb-1" style="color: var(--text-muted);">Decoração específica</label>
+                            <textarea id="boloDecoracao" placeholder="Descreva a decoração desejada (opcional)..."
+                                      class="w-full p-2 rounded-lg input-focus text-sm"
+                                      style="background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);"
+                                      rows="2"></textarea>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="boloPapelArroz"
+                                   class="w-4 h-4 rounded cursor-pointer"
+                                   style="accent-color: var(--accent);">
+                            <label for="boloPapelArroz" class="text-sm cursor-pointer" style="color: var(--text-secondary);">
+                                Papel arroz <span class="text-green-400 font-medium">(+R$ 20,00)</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <button id="adicionarItem" class="w-full py-2 btn-primary rounded-lg flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -628,7 +696,28 @@
                 <span class="text-sm text-gray-400">Selecionado: </span>
                 <span id="pagamentoSelecionado" class="font-medium">Nenhum</span>
             </div>
-            
+
+            <!-- Funcionário -->
+            <div class="mt-4">
+                <label class="block text-sm font-medium mb-2 flex items-center gap-2" style="color: var(--text-secondary);">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--accent);">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    Funcionário que tirou o pedido <span class="text-red-400">*</span>
+                </label>
+                <select id="funcionario"
+                        class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <option value="">Selecione o funcionário</option>
+                    <option value="Ana">Ana</option>
+                    <option value="Angelo">Angelo</option>
+                    <option value="Matheus">Matheus</option>
+                    <option value="Jorge Lucas">Jorge Lucas</option>
+                    <option value="Jorge Issao">Jorge Issao</option>
+                    <option value="Poleana">Poleana</option>
+                    <option value="Edurvirgem">Edurvirgem</option>
+                </select>
+            </div>
+
             <!-- Campo de Observações -->
             <div class="mt-6">
                 <label class="block text-sm font-medium mb-2 flex items-center gap-2" style="color: var(--text-secondary);">
@@ -668,12 +757,6 @@
                 </svg>
                 Novo Pedido
             </button>
-            <button id="exportarCSV" class="py-3 px-6 btn-secondary rounded-lg font-medium flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Exportar CSV
-            </button>
         </div>
 
         <!-- Status -->
@@ -692,6 +775,7 @@
             </div>
             <div style="border-top: 2px dashed black; margin: 6px 0;"></div>
             <div id="printCliente" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
+            <div id="printEncomenda" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
             <div style="border-top: 1px dashed black; margin: 6px 0;"></div>
             <div id="printItens" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
             <div id="printTaxaEntrega" style="margin: 6px 0; font-size: 17px; font-weight: 600;"></div>
@@ -758,6 +842,7 @@
         let itensCompra = [];
         let formaPagamentoSelecionada = '';
         let modoRetirada = false;
+        let modoEncomenda = false;
         
         // Estado do autocomplete
         let autocompleteAtivo = false;
@@ -1065,32 +1150,6 @@
             });
         }
 
-        // Buscar pedidos por data
-        function buscarPedidosPorData(data) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction(['pedidos'], 'readonly');
-                const store = transaction.objectStore('pedidos');
-                const index = store.index('data');
-                
-                const pedidos = [];
-                const request = index.openCursor();
-                
-                request.onsuccess = (event) => {
-                    const cursor = event.target.result;
-                    if (cursor) {
-                        const pedidoData = cursor.value.data.split('T')[0];
-                        if (pedidoData === data) {
-                            pedidos.push(cursor.value);
-                        }
-                        cursor.continue();
-                    } else {
-                        resolve(pedidos);
-                    }
-                };
-                
-                request.onerror = () => reject(request.error);
-            });
-        }
 
         // Buscar últimos pedidos (histórico)
         function buscarUltimosPedidos(limite = 10) {
@@ -1891,17 +1950,30 @@
                         ).join(', ');
                         const maisItens = itensCount > 3 ? ` e mais ${itensCount - 3} itens...` : '';
                         
+                        const encomendaBadge = pedido.encomenda
+                            ? `<span class="text-xs font-bold px-2 py-0.5 rounded" style="background: rgba(16,185,129,0.2); color: var(--accent);">ENCOMENDA</span>`
+                            : '';
+                        const funcionarioBadge = pedido.funcionario
+                            ? `<span class="text-xs text-gray-500">• ${pedido.funcionario}</span>`
+                            : '';
+                        const encomendaInfo = pedido.encomenda
+                            ? `<div class="text-xs mt-1" style="color: var(--accent);">📅 ${pedido.encomenda.data ? new Date(pedido.encomenda.data + 'T00:00:00').toLocaleDateString('pt-BR') : ''} ${pedido.encomenda.horario || ''}</div>`
+                            : '';
+
                         itemDiv.innerHTML = `
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-2">
+                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
                                         <span class="font-bold text-purple-400">${pedido.codigo}</span>
+                                        ${encomendaBadge}
                                         <span class="text-xs text-gray-400">${data}</span>
+                                        ${funcionarioBadge}
                                     </div>
                                     <div class="text-white font-medium mb-1">${pedido.cliente.nome}</div>
                                     <div class="text-sm text-gray-400 mb-2">${pedido.cliente.telefone}</div>
                                     <div class="text-sm text-gray-300">${primeirosItens}${maisItens}</div>
                                     <div class="text-xs text-blue-400 mt-1">${pedido.formaPagamento}</div>
+                                    ${encomendaInfo}
                                 </div>
                                 <button onclick="recuperarPedido('${pedido.codigo}')" class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all duration-200 hover:scale-105 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1938,7 +2010,7 @@
                 request.onsuccess = () => {
                     const pedido = request.result;
                     if (pedido) {
-                        // Preencher formulário com dados do pedido
+                        // Dados do cliente
                         elements.telefone.value = pedido.cliente.telefone || '';
                         elements.nome.value = pedido.cliente.nome || '';
                         elements.cep.value = pedido.cliente.cep || '';
@@ -1947,16 +2019,16 @@
                         elements.complemento.value = pedido.cliente.complemento || '';
                         elements.bairro.value = pedido.cliente.bairro || '';
                         elements.cidade.value = pedido.cliente.cidade || '';
-                        
-                        // Preencher itens
+
+                        // Itens
                         itensCompra = [...pedido.itens];
                         atualizarListaItens();
-                        
-                        // Preencher forma de pagamento
+
+                        // Forma de pagamento
                         document.querySelectorAll('.pagamento-btn').forEach(btn => {
                             btn.classList.remove('bg-teal-600', 'border-teal-500');
                             btn.classList.add('bg-gray-900', 'border-gray-700');
-                            
+
                             if (btn.dataset.tipo === pedido.formaPagamento) {
                                 btn.classList.remove('bg-gray-900', 'border-gray-700');
                                 btn.classList.add('bg-teal-600', 'border-teal-500');
@@ -1964,16 +2036,44 @@
                                 elements.pagamentoSelecionado.textContent = btn.textContent;
                             }
                         });
-                        
-                        // Preencher observações
-                        if (pedido.observacoes) {
-                            document.getElementById('observacoesPedido').value = pedido.observacoes;
+
+                        // Observações
+                        document.getElementById('observacoesPedido').value = pedido.observacoes || '';
+
+                        // Funcionário
+                        document.getElementById('funcionario').value = pedido.funcionario || '';
+
+                        // Toggle Entrega/Retirada
+                        const retirada = pedido.modoRetirada || false;
+                        modoRetirada = retirada;
+                        document.getElementById('toggleTipoPedido').checked = retirada;
+                        document.getElementById('labelEntrega').style.color = retirada ? 'var(--text-muted)' : 'var(--accent)';
+                        document.getElementById('labelRetirada').style.color = retirada ? '#fb923c' : 'var(--text-muted)';
+
+                        // Toggle Modo Encomenda
+                        const temEncomenda = !!pedido.encomenda;
+                        modoEncomenda = temEncomenda;
+                        const toggleModoEncomenda = document.getElementById('toggleModoEncomenda');
+                        const camposEncomenda = document.getElementById('camposEncomenda');
+                        const track = document.getElementById('trackModoEncomenda');
+                        toggleModoEncomenda.checked = temEncomenda;
+                        track.style.background = temEncomenda ? 'var(--accent)' : 'var(--surface-hover)';
+                        if (temEncomenda) {
+                            camposEncomenda.classList.remove('hidden');
+                            document.getElementById('dataEncomenda').value = pedido.encomenda.data || '';
+                            document.getElementById('horarioEncomenda').value = pedido.encomenda.horario || '';
+                            document.getElementById('valorSinal').value = pedido.encomenda.sinal || '';
+                        } else {
+                            camposEncomenda.classList.add('hidden');
+                            document.getElementById('dataEncomenda').value = '';
+                            document.getElementById('horarioEncomenda').value = '';
+                            document.getElementById('valorSinal').value = '';
                         }
-                        
+
                         // Verificar validação e fechar modal
                         verificarValidadePedido();
                         esconderModalHistorico();
-                        
+
                         mostrarStatus(`Pedido ${codigoPedido} recuperado com sucesso!`, 'success');
                     }
                 };
@@ -2055,6 +2155,16 @@
             document.getElementById('resultadosBusca').classList.add('hidden');
         }
 
+        function formatarDescricaoItem(item) {
+            if (!item.bolo) return `${item.quantidade} ${item.unidade} - ${item.descricao}`;
+            const b = item.bolo;
+            const formato = b.formato === 'redondo' ? 'Redondo' : 'Quadrado';
+            let desc = `🎂 ${item.quantidade} ${item.unidade} - Bolo ${formato} ${b.kg}kg - ${b.sabor}`;
+            if (b.decoracao) desc += ` | Decoração: ${b.decoracao}`;
+            if (b.papelArroz) desc += ` | Papel arroz +R$20`;
+            return desc;
+        }
+
         function atualizarListaItens() {
             elements.listaItens.innerHTML = '';
 
@@ -2063,7 +2173,7 @@
                 div.className = 'flex justify-between items-center p-3 bg-gray-900 rounded-lg item-enter hover:bg-gray-800 transition-colors';
                 div.innerHTML = `
                     <div class="flex-1">
-                        <span class="font-medium">${item.quantidade} ${item.unidade} - ${item.descricao}</span>
+                        <span class="font-medium">${formatarDescricaoItem(item)}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="editarItem(${index})" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-all duration-200 hover:scale-110 flex items-center gap-1" title="Editar item">
@@ -2105,20 +2215,36 @@
         function editarItem(index) {
             const item = itensCompra[index];
             const activeElements = getActiveElements();
-            
+
             // Preencher formulário com dados do item
             activeElements.quantidade.value = item.quantidade;
             activeElements.unidade.value = item.unidade;
             activeElements.descricao.value = item.descricao;
-            
+
+            // Restaurar campos de bolo se aplicável
+            const ehBoloEl = document.getElementById('ehBolo');
+            const camposBolo = document.getElementById('camposBolo');
+            if (item.bolo) {
+                ehBoloEl.checked = true;
+                camposBolo.classList.remove('hidden');
+                document.getElementById('boloFormato').value = item.bolo.formato || 'redondo';
+                document.getElementById('boloKg').value = item.bolo.kg || '';
+                document.getElementById('boloSabor').value = item.bolo.sabor || '';
+                document.getElementById('boloDecoracao').value = item.bolo.decoracao || '';
+                document.getElementById('boloPapelArroz').checked = item.bolo.papelArroz || false;
+            } else {
+                ehBoloEl.checked = false;
+                camposBolo.classList.add('hidden');
+            }
+
             // Remover item da lista
             itensCompra.splice(index, 1);
             atualizarListaItens();
             verificarValidadePedido();
-            
+
             // Focar no campo quantidade
             activeElements.quantidade.focus();
-            
+
             mostrarStatus('Item carregado para edição', 'info');
         }
 
@@ -2126,20 +2252,35 @@
             const activeElements = getActiveElements();
             activeElements.quantidade.value = '';
             activeElements.descricao.value = '';
+            // Resetar campos de bolo
+            document.getElementById('ehBolo').checked = false;
+            document.getElementById('camposBolo').classList.add('hidden');
+            document.getElementById('boloFormato').value = 'redondo';
+            document.getElementById('boloKg').value = '';
+            document.getElementById('boloSabor').value = '';
+            document.getElementById('boloDecoracao').value = '';
+            document.getElementById('boloPapelArroz').checked = false;
             activeElements.quantidade.focus();
         }
 
         function verificarValidadePedido() {
             const telefoneValido = elements.telefone.value.replace(/\D/g, '').length >= 10;
             const nomeValido = elements.nome.value.trim() !== '';
-            
+
             // No modo retirada, endereço é opcional
             const enderecoValido = modoRetirada ? true : (elements.rua.value.trim() !== '' && elements.cidade.value.trim() !== '');
-            
+
             const temItens = itensCompra.length > 0;
             const temPagamento = formaPagamentoSelecionada !== '';
 
-            const pedidoValido = telefoneValido && nomeValido && enderecoValido && temItens && temPagamento;
+            const funcionarioValido = document.getElementById('funcionario').value !== '';
+
+            // Em modo encomenda, data e horário são obrigatórios
+            const encomendaValida = modoEncomenda
+                ? (document.getElementById('dataEncomenda').value !== '' && document.getElementById('horarioEncomenda').value !== '')
+                : true;
+
+            const pedidoValido = telefoneValido && nomeValido && enderecoValido && temItens && temPagamento && funcionarioValido && encomendaValida;
 
             document.getElementById('copiarWhatsApp').disabled = !pedidoValido;
             document.getElementById('imprimirPedido').disabled = !pedidoValido;
@@ -2427,17 +2568,39 @@
             const quantidade = parseFloat(activeElements.quantidade.value);
             const unidade = activeElements.unidade.value;
             const descricao = activeElements.descricao.value.trim();
+            const ehBolo = document.getElementById('ehBolo').checked;
 
             if (!quantidade || !descricao) {
                 mostrarStatus('Preencha quantidade e descrição', 'error');
                 return;
             }
 
+            // Validar e capturar campos de bolo
+            let boloData = null;
+            let valorAdicional = null;
+            if (ehBolo) {
+                const formato = document.getElementById('boloFormato').value;
+                const kg = parseFloat(document.getElementById('boloKg').value);
+                const sabor = document.getElementById('boloSabor').value.trim();
+                const decoracao = document.getElementById('boloDecoracao').value.trim();
+                const papelArroz = document.getElementById('boloPapelArroz').checked;
+
+                if (!kg || !sabor) {
+                    mostrarStatus('Preencha pelo menos o peso e sabor do bolo', 'error');
+                    return;
+                }
+
+                boloData = { formato, kg, sabor, decoracao: decoracao || null, papelArroz };
+                valorAdicional = papelArroz ? 20 : null;
+            }
+
             const item = {
                 id: Date.now(),
                 quantidade,
                 unidade,
-                descricao
+                descricao,
+                bolo: boloData,
+                valorAdicional
             };
 
             itensCompra.push(item);
@@ -2498,47 +2661,58 @@
                 endereco: `${elements.rua.value}, ${elements.numero.value}${elements.complemento.value ? ', ' + elements.complemento.value : ''}, ${elements.bairro.value}, ${elements.cidade.value}`
             };
 
+            const funcionario = document.getElementById('funcionario').value;
+
             let texto = `🛒 *PEDIDO - ${gerarCodigoPedido()}*\n\n`;
             texto += `👤 *Cliente:* ${cliente.nome}\n`;
             texto += `📞 *Telefone:* ${cliente.telefone}\n`;
-            
-            if (modoRetirada) {
-                const dataRetirada = document.getElementById('dataRetirada').value;
-                const horarioRetirada = document.getElementById('horarioRetirada').value;
-                const observacoesRetirada = document.getElementById('observacoesRetirada').value.trim();
-                
-                texto += `🏪 *RETIRADA/ENCOMENDA*\n`;
-                if (dataRetirada) {
-                    const dataFormatada = new Date(dataRetirada + 'T00:00:00').toLocaleDateString('pt-BR');
-                    texto += `📅 *Data:* ${dataFormatada}\n`;
-                }
-                if (horarioRetirada) {
-                    texto += `⏰ *Horário:* ${horarioRetirada}\n`;
-                }
-                if (observacoesRetirada) {
-                    texto += `📝 *Obs. Retirada:* ${observacoesRetirada}\n`;
-                }
-            } else {
-                texto += `📍 *Endereço:* ${cliente.endereco}\n`;
+            texto += `🧑‍💼 *Atendente:* ${funcionario}\n`;
+
+            if (modoEncomenda) {
+                const dataEncomenda = document.getElementById('dataEncomenda').value;
+                const horarioEncomenda = document.getElementById('horarioEncomenda').value;
+                const valorSinal = document.getElementById('valorSinal').value;
+                const dataFormatada = dataEncomenda ? new Date(dataEncomenda + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+
+                texto += `\n📋 *ENCOMENDA*\n`;
+                if (dataFormatada) texto += `📅 *Data:* ${dataFormatada}\n`;
+                if (horarioEncomenda) texto += `⏰ *Horário:* ${horarioEncomenda}\n`;
+                if (valorSinal) texto += `💰 *Sinal:* ${formatarMoeda(valorSinal)}\n`;
             }
-            
+
+            if (!modoRetirada) {
+                texto += `📍 *Endereço:* ${cliente.endereco}\n`;
+            } else {
+                texto += `🏪 *Retirada na loja*\n`;
+            }
+
             texto += `\n🛍️ *Itens:*\n`;
-            
+
             itensCompra.forEach(item => {
-                texto += `• ${item.quantidade} ${item.unidade} - ${item.descricao}\n`;
+                if (item.bolo) {
+                    const b = item.bolo;
+                    const formato = b.formato === 'redondo' ? 'Redondo' : 'Quadrado';
+                    texto += `• 🎂 ${item.quantidade} ${item.unidade} - Bolo ${formato} ${b.kg}kg - ${b.sabor}`;
+                    if (b.decoracao) texto += ` | Decoração: ${b.decoracao}`;
+                    if (b.papelArroz) texto += ` | Papel arroz +R$20`;
+                    texto += `\n`;
+                } else {
+                    texto += `• ${item.quantidade} ${item.unidade} - ${item.descricao}\n`;
+                }
             });
-            
+
             // Adicionar taxa de entrega se não for retirada
             if (!modoRetirada && taxaEntregaAtual > 0) {
                 texto += `🚚 *Taxa de Entrega:* R$ ${taxaEntregaAtual.toFixed(2)} (${bairroAtual} - ${descricaoTaxaAtual})\n`;
             }
-            
-            texto += `💳 *Pagamento:* ${document.querySelector('.pagamento-btn.bg-teal-600').textContent}`;
-            
+
+            const pagamentoBtn = document.querySelector('.pagamento-btn.bg-teal-600');
+            texto += `💳 *Pagamento:* ${pagamentoBtn ? pagamentoBtn.textContent.trim() : formaPagamentoSelecionada}`;
+
             if (formaPagamentoSelecionada === 'dinheiro' && elements.valorTroco.value) {
                 texto += ` - Troco para ${formatarMoeda(elements.valorTroco.value)}`;
             }
-            
+
             // Adicionar observações se houver
             const observacoes = document.getElementById('observacoesPedido').value.trim();
             if (observacoes) {
@@ -2554,7 +2728,8 @@
         document.getElementById('imprimirPedido').addEventListener('click', async () => {
             const codigo = gerarCodigoPedido();
             const agora = new Date();
-            
+            const funcionario = document.getElementById('funcionario').value;
+
             // Salvar cliente
             const cliente = {
                 telefone: elements.telefone.value,
@@ -2566,7 +2741,7 @@
                 bairro: elements.bairro.value,
                 cidade: elements.cidade.value
             };
-            
+
             try {
                 await salvarCliente(cliente);
             } catch (error) {
@@ -2576,20 +2751,13 @@
             // Preparar dados para impressão
             document.getElementById('printPedidoCodigo').textContent = codigo;
             document.getElementById('printData').textContent = agora.toLocaleString('pt-BR');
-            
-            // Dados do cliente variam conforme o tipo de pedido
+
+            // Dados do cliente
             if (modoRetirada) {
-                const dataRetirada = document.getElementById('dataRetirada').value;
-                const horarioRetirada = document.getElementById('horarioRetirada').value;
-                const dataFormatada = dataRetirada ? new Date(dataRetirada + 'T00:00:00').toLocaleDateString('pt-BR') : '';
-                
                 document.getElementById('printCliente').innerHTML = `
-                    <strong>RETIRADA/ENCOMENDA:</strong><br>
+                    <strong>RETIRADA:</strong><br>
                     ${cliente.nome}<br>
-                    ${cliente.telefone}<br>
-                    ${dataRetirada && horarioRetirada ? `<strong>Para:</strong> ${dataFormatada} às ${horarioRetirada}` : ''}
-                    ${dataRetirada && !horarioRetirada ? `<strong>Para:</strong> ${dataFormatada}` : ''}
-                    ${!dataRetirada && horarioRetirada ? `<strong>Horário:</strong> ${horarioRetirada}` : ''}
+                    ${cliente.telefone}
                 `;
             } else {
                 document.getElementById('printCliente').innerHTML = `
@@ -2601,49 +2769,61 @@
                     ${elements.bairro.value}, ${elements.cidade.value}
                 `;
             }
-            
+
+            // Dados da encomenda
+            if (modoEncomenda) {
+                const dataEncomenda = document.getElementById('dataEncomenda').value;
+                const horarioEncomenda = document.getElementById('horarioEncomenda').value;
+                const valorSinal = document.getElementById('valorSinal').value;
+                const dataFormatada = dataEncomenda ? new Date(dataEncomenda + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+                let encomendaHTML = `<div style="border-top: 1px dashed black; margin: 5px 0;"></div><strong>ENCOMENDA:</strong><br>`;
+                if (dataFormatada) encomendaHTML += `Data: ${dataFormatada}<br>`;
+                if (horarioEncomenda) encomendaHTML += `Horário: ${horarioEncomenda}<br>`;
+                if (valorSinal) encomendaHTML += `Sinal: ${formatarMoeda(valorSinal)}<br>`;
+                document.getElementById('printEncomenda').innerHTML = encomendaHTML;
+            } else {
+                document.getElementById('printEncomenda').innerHTML = '';
+            }
+
+            // Itens
             let itensHTML = '<strong>ITENS:</strong><br>';
             itensCompra.forEach(item => {
-                itensHTML += `${item.quantidade} ${item.unidade} - ${item.descricao}<br>`;
+                if (item.bolo) {
+                    const b = item.bolo;
+                    const formato = b.formato === 'redondo' ? 'Redondo' : 'Quadrado';
+                    itensHTML += `🎂 ${item.quantidade} ${item.unidade} - Bolo ${formato} ${b.kg}kg - ${b.sabor}`;
+                    if (b.decoracao) itensHTML += ` | Dec: ${b.decoracao}`;
+                    if (b.papelArroz) itensHTML += ` | Papel arroz +R$20`;
+                    itensHTML += `<br>`;
+                } else {
+                    itensHTML += `${item.quantidade} ${item.unidade} - ${item.descricao}<br>`;
+                }
             });
             document.getElementById('printItens').innerHTML = itensHTML;
-            
-            // Adicionar taxa de entrega se não for retirada
+
+            // Taxa de entrega
             if (!modoRetirada && taxaEntregaAtual > 0) {
                 document.getElementById('printTaxaEntrega').innerHTML = `<strong>TAXA DE ENTREGA:</strong><br>R$ ${taxaEntregaAtual.toFixed(2)} (${bairroAtual} - ${descricaoTaxaAtual})<br><div style="border-top: 1px dashed black; margin: 5px 0;"></div>`;
             } else {
                 document.getElementById('printTaxaEntrega').innerHTML = '';
             }
-            
-            let pagamentoText = document.querySelector('.pagamento-btn.bg-teal-600').textContent;
+
+            // Pagamento e funcionário
+            const pagamentoBtn = document.querySelector('.pagamento-btn.bg-teal-600');
+            let pagamentoText = pagamentoBtn ? pagamentoBtn.textContent.trim() : formaPagamentoSelecionada;
             if (formaPagamentoSelecionada === 'dinheiro' && elements.valorTroco.value) {
                 pagamentoText += ` - Troco: ${formatarMoeda(elements.valorTroco.value)}`;
             }
-            document.getElementById('printPagamento').innerHTML = `<strong>PAGAMENTO:</strong><br>${pagamentoText}`;
-            
-            // Adicionar observações se houver
+            document.getElementById('printPagamento').innerHTML = `<strong>PAGAMENTO:</strong><br>${pagamentoText}<br><strong>Atendente:</strong> ${funcionario}`;
+
+            // Observações
             const observacoes = document.getElementById('observacoesPedido').value.trim();
-            const observacoesRetirada = modoRetirada ? document.getElementById('observacoesRetirada').value.trim() : '';
-
-            let observacoesHTML = '';
-
-            if (observacoes || observacoesRetirada) {
-                observacoesHTML = '<div style="border-top: 1px dashed black; margin: 5px 0;"></div><strong>OBSERVAÇÕES:</strong><br>';
-
-                if (observacoesRetirada) {
-                    observacoesHTML += `<strong>Encomenda:</strong> ${observacoesRetirada.replace(/\n/g, '<br>')}<br>`;
-                }
-
-                if (observacoes) {
-                    observacoesHTML += `<strong>Pedido:</strong> ${observacoes.replace(/\n/g, '<br>')}`;
-                }
-
-                document.getElementById('printObservacoes').innerHTML = observacoesHTML;
+            if (observacoes) {
+                document.getElementById('printObservacoes').innerHTML = `<div style="border-top: 1px dashed black; margin: 5px 0;"></div><strong>OBSERVAÇÕES:</strong><br>${observacoes.replace(/\n/g, '<br>')}`;
             } else {
                 document.getElementById('printObservacoes').innerHTML = '';
             }
-            
-            // Removido total pois valores foram removidos
+
             document.getElementById('printTotal').textContent = '';
 
             // Salvar pedido
@@ -2654,7 +2834,14 @@
                 itens: [...itensCompra],
                 formaPagamento: formaPagamentoSelecionada,
                 valorTroco: elements.valorTroco.value || null,
-                observacoes: document.getElementById('observacoesPedido').value.trim() || null
+                observacoes: observacoes || null,
+                funcionario,
+                modoRetirada,
+                encomenda: modoEncomenda ? {
+                    data: document.getElementById('dataEncomenda').value,
+                    horario: document.getElementById('horarioEncomenda').value,
+                    sinal: document.getElementById('valorSinal').value || null
+                } : null
             };
 
             try {
@@ -2680,33 +2867,45 @@
                 document.getElementById('observacoesPedido').value = '';
                 document.getElementById('buscarNome').value = '';
 
-                // Limpar campos específicos de retirada
-                document.getElementById('dataRetirada').value = '';
-                document.getElementById('horarioRetirada').value = '';
-                document.getElementById('observacoesRetirada').value = '';
-
-                // Resetar para modo entrega (desmarcar toggle)
+                // Resetar toggle Entrega/Retirada
                 const toggleTipoPedido = document.getElementById('toggleTipoPedido');
-                const camposRetirada = document.getElementById('camposRetirada');
                 const labelEntrega = document.getElementById('labelEntrega');
                 const labelRetirada = document.getElementById('labelRetirada');
-
                 toggleTipoPedido.checked = false;
                 modoRetirada = false;
-                camposRetirada.classList.add('hidden');
-                labelEntrega.classList.remove('text-gray-400');
-                labelEntrega.classList.add('text-teal-400');
-                labelRetirada.classList.remove('text-orange-400');
-                labelRetirada.classList.add('text-gray-400');
+                labelEntrega.style.color = 'var(--accent)';
+                labelRetirada.style.color = 'var(--text-muted)';
+
+                // Resetar toggle Modo Encomenda
+                const toggleModoEncomenda = document.getElementById('toggleModoEncomenda');
+                const camposEncomenda = document.getElementById('camposEncomenda');
+                const track = document.getElementById('trackModoEncomenda');
+                toggleModoEncomenda.checked = false;
+                modoEncomenda = false;
+                camposEncomenda.classList.add('hidden');
+                track.style.background = 'var(--surface-hover)';
+                document.getElementById('dataEncomenda').value = '';
+                document.getElementById('horarioEncomenda').value = '';
+                document.getElementById('valorSinal').value = '';
+
+                // Resetar funcionário
+                document.getElementById('funcionario').value = '';
+
+                // Resetar campos de bolo no formulário
+                document.getElementById('ehBolo').checked = false;
+                document.getElementById('camposBolo').classList.add('hidden');
+                document.getElementById('boloFormato').value = 'redondo';
+                document.getElementById('boloKg').value = '';
+                document.getElementById('boloSabor').value = '';
+                document.getElementById('boloDecoracao').value = '';
+                document.getElementById('boloPapelArroz').checked = false;
 
                 // Resetar taxa de entrega
                 taxaEntregaAtual = 0;
                 bairroAtual = '';
                 descricaoTaxaAtual = '';
                 const rodapeTaxa = document.getElementById('taxaEntregaRodape');
-                if (rodapeTaxa) {
-                    rodapeTaxa.classList.add('hidden');
-                }
+                if (rodapeTaxa) rodapeTaxa.classList.add('hidden');
 
                 // Esconder lista de clientes
                 esconderListaClientes();
@@ -2732,49 +2931,14 @@
             }
         });
 
-        // Exportar CSV
-        document.getElementById('exportarCSV').addEventListener('click', async () => {
-            const hoje = new Date().toISOString().split('T')[0];
-            
-            try {
-                const pedidosHoje = await buscarPedidosPorData(hoje);
-                
-                if (pedidosHoje.length === 0) {
-                    mostrarStatus('Nenhum pedido encontrado para hoje', 'info');
-                    return;
-                }
-
-                let csvContent = 'Codigo,Data,Cliente,Telefone,Endereco,Itens,Pagamento,Observacoes\n';
-                
-                pedidosHoje.forEach(pedido => {
-                    const endereco = `${pedido.cliente.rua} ${pedido.cliente.numero} ${pedido.cliente.complemento} ${pedido.cliente.bairro} ${pedido.cliente.cidade}`.replace(/\s+/g, ' ').trim();
-                    const itensDesc = pedido.itens.map(item => `${item.quantidade}${item.unidade} ${item.descricao}`).join('; ');
-                    
-                    const observacoes = pedido.observacoes ? pedido.observacoes.replace(/"/g, '""') : '';
-                    csvContent += `"${pedido.codigo}","${new Date(pedido.data).toLocaleString('pt-BR')}","${pedido.cliente.nome}","${pedido.cliente.telefone}","${endereco}","${itensDesc}","${pedido.formaPagamento}","${observacoes}"\n`;
-                });
-
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', `pedidos_${hoje}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                mostrarStatus(`${pedidosHoje.length} pedidos exportados!`, 'success');
-            } catch (error) {
-                mostrarStatus('Erro ao exportar CSV', 'error');
-                console.error('Erro:', error);
-            }
-        });
 
         // Adicionar listeners para validação em tempo real
         ['telefone', 'nome', 'rua', 'cidade'].forEach(campo => {
             elements[campo].addEventListener('input', verificarValidadePedido);
         });
+        document.getElementById('funcionario').addEventListener('change', verificarValidadePedido);
+        document.getElementById('dataEncomenda').addEventListener('input', verificarValidadePedido);
+        document.getElementById('horarioEncomenda').addEventListener('input', verificarValidadePedido);
 
         // Permitir Enter para busca e adicionar itens
         function addEnterListeners() {
@@ -2844,25 +3008,53 @@
         // Toggle entre Entrega e Retirada
         document.getElementById('toggleTipoPedido').addEventListener('change', (e) => {
             modoRetirada = e.target.checked;
-            const camposRetirada = document.getElementById('camposRetirada');
             const labelEntrega = document.getElementById('labelEntrega');
             const labelRetirada = document.getElementById('labelRetirada');
-            
+
             if (modoRetirada) {
-                camposRetirada.classList.remove('hidden');
-                labelEntrega.classList.remove('text-teal-400');
-                labelEntrega.classList.add('text-gray-400');
-                labelRetirada.classList.remove('text-gray-400');
-                labelRetirada.classList.add('text-orange-400');
+                labelEntrega.style.color = 'var(--text-muted)';
+                labelRetirada.style.color = '#fb923c';
             } else {
-                camposRetirada.classList.add('hidden');
-                labelEntrega.classList.remove('text-gray-400');
-                labelEntrega.classList.add('text-teal-400');
-                labelRetirada.classList.remove('text-orange-400');
-                labelRetirada.classList.add('text-gray-400');
+                labelEntrega.style.color = 'var(--accent)';
+                labelRetirada.style.color = 'var(--text-muted)';
             }
-            
+
             verificarValidadePedido();
+        });
+
+        // Toggle Modo Encomenda
+        document.getElementById('toggleModoEncomenda').addEventListener('change', (e) => {
+            modoEncomenda = e.target.checked;
+            const camposEncomenda = document.getElementById('camposEncomenda');
+            const track = document.getElementById('trackModoEncomenda');
+
+            if (modoEncomenda) {
+                camposEncomenda.classList.remove('hidden');
+                track.style.background = 'var(--accent)';
+            } else {
+                camposEncomenda.classList.add('hidden');
+                track.style.background = 'var(--surface-hover)';
+                document.getElementById('dataEncomenda').value = '';
+                document.getElementById('horarioEncomenda').value = '';
+                document.getElementById('valorSinal').value = '';
+            }
+
+            verificarValidadePedido();
+        });
+
+        // Toggle campos de bolo
+        document.getElementById('ehBolo').addEventListener('change', (e) => {
+            const camposBolo = document.getElementById('camposBolo');
+            if (e.target.checked) {
+                camposBolo.classList.remove('hidden');
+            } else {
+                camposBolo.classList.add('hidden');
+                document.getElementById('boloKg').value = '';
+                document.getElementById('boloSabor').value = '';
+                document.getElementById('boloDecoracao').value = '';
+                document.getElementById('boloPapelArroz').checked = false;
+                document.getElementById('boloFormato').value = 'redondo';
+            }
         });
 
         // Importar lista do WhatsApp
