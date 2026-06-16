@@ -1574,6 +1574,19 @@
             }
         }
 
+        // Recalcula a taxa lendo os campos do formulário (usar ao carregar cliente/pedido)
+        function recalcularTaxaSeAplicavel() {
+            if (modoRetirada) return;
+            if (!elements.rua.value) return;
+            calcularEExibirTaxaEntrega({
+                rua: elements.rua.value,
+                numero: elements.numero.value,
+                bairro: elements.bairro.value,
+                cidade: elements.cidade.value,
+                cep: elements.cep.value
+            });
+        }
+
         // Atualiza o display da taxa de entrega no rodapé
         // info: { loading } | { erro } | { taxa, descricao, km, fonte, url }
         function atualizarDisplayTaxaEntrega(info = {}) {
@@ -2282,6 +2295,9 @@
                         verificarValidadePedido();
                         esconderModalHistorico();
 
+                        // Recalcular taxa de entrega do pedido recuperado
+                        recalcularTaxaSeAplicavel();
+
                         mostrarStatus(`Pedido ${codigoPedido} recuperado com sucesso!`, 'success');
                     }
                 };
@@ -2356,6 +2372,9 @@
             
             mostrarStatus(`Cliente ${cliente.nome} selecionado!`, 'success');
             verificarValidadePedido();
+
+            // Cliente já cadastrado também precisa de cálculo de taxa
+            recalcularTaxaSeAplicavel();
         }
 
         // Esconder lista de clientes
@@ -3219,18 +3238,7 @@
         });
 
         // Recalcular taxa de entrega ao sair do campo número (geocodificação mais precisa)
-        elements.numero.addEventListener('blur', () => {
-            if (modoRetirada) return;
-            if (elements.numero.value && elements.rua.value) {
-                calcularEExibirTaxaEntrega({
-                    rua: elements.rua.value,
-                    numero: elements.numero.value,
-                    bairro: elements.bairro.value,
-                    cidade: elements.cidade.value,
-                    cep: elements.cep.value
-                });
-            }
-        });
+        elements.numero.addEventListener('blur', recalcularTaxaSeAplicavel);
 
         // Geocodifica o endereço fixo da loja uma vez, para coordenadas precisas na rota
         async function calibrarCoordenadasEmpresa() {
